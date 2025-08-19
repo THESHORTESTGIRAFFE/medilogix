@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form_action }} Requisition - SAMS PMD{% endblock %}
+
+{% block head_extra %}
+<style>
+    .item-row { margin-bottom: 10px; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+    .item-row .form-control { margin-bottom: 5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>{{ form_action }} Requisition</h2>
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('requisitions.create_requisition') }}" id="requisitionForm">
+            {# CSRF token if using Flask-WTF #}
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="requester_name" class="form-label">Requester</label>
+                    <input type="text" class="form-control" id="requester_name" value="{{ current_user.full_name if current_user.full_name else current_user.username }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="department_name" class="form-label">Department</label>
+                    <input type="text" class="form-control" id="department_name" value="{{ current_user_department_name }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="required_by_date" class="form-label">Required By Date</label>
+                    <input type="date" class="form-control" id="required_by_date" name="required_by_date" value="{{ form_data.required_by_date if form_data else '' }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Overall Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="2">{{ form_data.notes if form_data else '' }}</textarea>
+            </div>
+
+            <hr>
+            <h4>Requested Items</h4>
+            <div id="item-rows-container">
+                {# Initial item row - JavaScript will handle adding more #}
+                {% if requested_items_data %}
+                    {% for item_data in requested_items_data %}
+                    <div class="item-row row">
+                        <div class="col-md-4">
+                            <label class="form-label">Item</label>
+                            <select class="form-select item-select" name="item_id_{{ loop.index0 }}" required>
+                                <option value="">Select Item</option>
+                                {% for item_opt in items_for_selection %}
+                                <option value="{{ item_opt.id }}" data-unit="{{ item_opt.unit_of_measure }}" {% if item_data.item_id == item_opt.id %}selected{% endif %}>
+                                    {{ item_opt.name }} ({{ item_opt.sku if item_opt.sku else 'No SKU' }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" step="0.01" class="form-control item-quantity" name="quantity_{{ loop.index0 }}" placeholder="Qty" value="{{ item_data.quantity_requested }}" required>
+                        </div>
+                        <div class="col-md-1"><span class="unit-display pt-4 d-block"></span></div>
+                        <div class="col-md-4">
+                            <label class="form-label">Item Notes</label>
+                            <input type="text" class="form-control" name="item_notes_{{ loop.index0 }}" placeholder="Notes for this item" value="{{ item_data.notes }}">
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-item-row">X</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                 <div class="item-row row">
+                    <div class="col-md-4">
+                        <label class="form-label">Item</label>
+                        <select class="form-select item-select" name="item_id_0" required>
+                            <option value="">Select Item</option>
+                            {% for item_opt in items_for_selection %}
+                            <option value="{{ item_opt.id }}" data-unit="{{ item_opt.unit_of_measure }}">
+                                {{ item_opt.name }} ({{ item_opt.sku if item_opt.sku else 'No SKU' }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" step="0.01" class="form-control item-quantity" name="quantity_0" placeholder="Qty" required>
+                    </div>
+                    <div class="col-md-1"><span class="unit-display pt-4 d-block"></span></div>
+                    <div class="col-md-4">
+                        <label class="form-label">Item Notes</label>
+                        <input type="text" class="form-control" name="item_notes_0" placeholder="Notes for this item">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-item-row">X</button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <button type="button" id="add-item-btn" class="btn btn-outline-success btn-sm mt-2">Add Another Item</button>
+
+            <hr class="mt-4">
+            <button type="submit" class="btn btn-primary">Submit Requisition</button>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('item-rows-container');
+    const addItemBtn = document.getElementById('add-item-btn');
+    let itemRowIndex = container.querySelectorAll('.item-row').length;
+
+    function updateItemRowIndices() {
+        container.querySelectorAll('.item-row').forEach((row, index) => {
+            row.querySelector('.item-select').name = `item_id_${index}`;
+            row.querySelector('.item-quantity').name = `quantity_${index}`;
+            row.querySelector('input[type="text"]').name = `item_notes_${index}`;
+        });
+        itemRowIndex = container.querySelectorAll('.item-row').length;
+    }
+
+    function updateUnitDisplay(selectElement) {
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const unit = selectedOption.dataset.unit || '';
+        const unitDisplay = selectElement.closest('.item-row').querySelector('.unit-display');
+        if (unitDisplay) {
+            unitDisplay.textContent = unit;
+        }
+    }
+
+    container.addEventListener('change', function(event) {
+        if (event.target.classList.contains('item-select')) {
+            updateUnitDisplay(event.target);
+        }
+    });
+
+    container.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-item-row')) {
+            if (container.querySelectorAll('.item-row').length > 1) {
+                event.target.closest('.item-row').remove();
+                updateItemRowIndices();
+            } else {
+                alert("You must have at least one item in the requisition.");
+            }
+        }
+    });
+
+    addItemBtn.addEventListener('click', function () {
+        const firstRow = container.querySelector('.item-row');
+        if (!firstRow) { // Should not happen if template is correct
+            console.error("No initial item row found to clone.");
+            return;
+        }
+        const newRow = firstRow.cloneNode(true);
+
+        newRow.querySelector('.item-select').name = `item_id_${itemRowIndex}`;
+        newRow.querySelector('.item-select').value = ""; // Reset selection
+        newRow.querySelector('.item-quantity').name = `quantity_${itemRowIndex}`;
+        newRow.querySelector('.item-quantity').value = ""; // Reset quantity
+        newRow.querySelector('input[type="text"]').name = `item_notes_${itemRowIndex}`;
+        newRow.querySelector('input[type="text"]').value = ""; // Reset notes
+        newRow.querySelector('.unit-display').textContent = ""; // Reset unit
+
+        container.appendChild(newRow);
+        itemRowIndex++;
+    });
+
+    // Initialize unit display for existing rows on page load/reload
+    container.querySelectorAll('.item-select').forEach(select => {
+        if(select.value) { // If an item is already selected (e.g. form re-submission)
+             updateUnitDisplay(select);
+        }
+    });
+    // Initial call to set indices correctly if rows are pre-populated by server on error
+    updateItemRowIndices();
+});
+</script>
+{% endblock %}

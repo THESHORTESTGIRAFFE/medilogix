@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form_action }} Item - SAMS PMD{% endblock %}
+
+{% block content %}
+<h2>{{ form_action }} Item</h2>
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <form method="POST" action=""> {# Action URL will be current URL (add or edit) #}
+            {# Add CSRF token here if using Flask-WTF #}
+            
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label for="name" class="form-label">Item Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ request.form.name if request.form.name else (item.name if item else '') }}" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="sku" class="form-label">SKU (Stock Keeping Unit)</label>
+                    <input type="text" class="form-control" id="sku" name="sku" value="{{ request.form.sku if request.form.sku else (item.sku if item else '') }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{ request.form.description if request.form.description else (item.description if item else '') }}</textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
+                    <select class="form-select" id="category_id" name="category_id" required>
+                        <option value="" disabled {% if not request.form.category_id and (not item or not item.category_id) %}selected{% endif %}>Select Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" 
+                                {% if request.form.category_id == category.id|string %}selected
+                                {% elif item and item.category_id == category.id and not request.form.category_id %}selected
+                                {% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="unit_of_measure" class="form-label">Unit of Measure <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="unit_of_measure" name="unit_of_measure" placeholder="e.g., pieces, box, kg" value="{{ request.form.unit_of_measure if request.form.unit_of_measure else (item.unit_of_measure if item else '') }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="reorder_threshold" class="form-label">Reorder Threshold</label>
+                    <input type="number" step="0.01" class="form-control" id="reorder_threshold" name="reorder_threshold" value="{{ request.form.reorder_threshold if request.form.reorder_threshold else (item.reorder_threshold if item else '0.00') }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="2">{{ request.form.notes if request.form.notes else (item.notes if item else '') }}</textarea>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="true" {% if (request.form.is_active == 'true') or (item and item.is_active and request.form.is_active is not defined) or (not item and request.form.is_active is not defined) %}checked{% endif %}>
+                <label class="form-check-label" for="is_active">Item is Active</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Item</button>
+            <a href="{{ url_for('inventory.list_items') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

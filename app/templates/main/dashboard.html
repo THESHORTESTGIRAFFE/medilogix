@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+{# Include Chart.js library #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* Updated Stat Card Styles */
+    .stat-card {
+        /* border-top: 3px solid transparent; */ /* Removed to match CodePen style */
+        border: none; /* Remove default card border */
+        border-radius: 0.75rem; /* Softer corners, closer to CodePen's 1rem */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15), 0 6px 10px rgba(0,0,0,0.1) !important; /* Enhanced shadow, !important to override .shadow-sm if needed */
+    }
+
+    .stat-card .card-body {
+        padding: 1.5rem; /* Increased padding */
+        /* text-align: center; Applied via class in HTML */
+    }
+
+    .stat-card-icon-wrap {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: inline-flex; /* Allows centering via text-align on parent and centers icon */
+        align-items: center;
+        justify-content: center;
+        /* margin-bottom: 1rem; /* Applied via mb-3 class in HTML */
+    }
+
+    .stat-card .card-title {
+        font-weight: 600; /* Bolder like CodePen */
+        font-size: 1.3rem; /* Closer to CodePen's 1.5rem title */
+        /* Color will be set by theme-specific classes */
+    }
+
+    .stat-card .card-text.fs-1 { /* Targeting the main stat value */
+        font-weight: 700; /* Already fw-bold */
+        line-height: 1.2;
+        /* font-size: 2.5rem; /* Ensured by fs-1 class */
+    }
+
+    /* Theme-specific styles */
+    /* Primary Theme */
+    .stat-card-primary .stat-card-icon-wrap { background-color: rgba(var(--bs-primary-rgb), 0.15); }
+    .stat-card-primary .stat-card-icon-wrap i { color: var(--bs-primary); }
+    .stat-card-primary .card-title { color: var(--bs-primary); }
+    .stat-card-primary .card-footer { color: var(--bs-primary); }
+
+    /* Info Theme */
+    .stat-card-info .stat-card-icon-wrap { background-color: rgba(var(--bs-info-rgb), 0.15); }
+    .stat-card-info .stat-card-icon-wrap i { color: var(--bs-info); }
+    .stat-card-info .card-title { color: var(--bs-info); }
+    .stat-card-info .card-footer { color: var(--bs-info); }
+
+    /* Secondary Theme (Bootstrap's Gray) */
+    .stat-card-secondary .stat-card-icon-wrap { background-color: rgba(var(--bs-secondary-rgb), 0.15); }
+    .stat-card-secondary .stat-card-icon-wrap i { color: var(--bs-secondary); }
+    .stat-card-secondary .card-title { color: var(--bs-secondary); }
+    .stat-card-secondary .card-footer { color: var(--bs-secondary); }
+
+    /* Warning Theme */
+    .stat-card-warning .stat-card-icon-wrap { background-color: rgba(var(--bs-warning-rgb), 0.15); }
+    .stat-card-warning .stat-card-icon-wrap i { color: var(--bs-warning); }
+    .stat-card-warning .card-title { color: var(--bs-warning); }
+    .stat-card-warning .card-footer { color: var(--bs-warning); }
+    
+    /* Success Theme */
+    .stat-card-success .stat-card-icon-wrap { background-color: rgba(var(--bs-success-rgb), 0.15); }
+    .stat-card-success .stat-card-icon-wrap i { color: var(--bs-success); }
+    .stat-card-success .card-title { color: var(--bs-success); }
+    .stat-card-success .card-footer { color: var(--bs-success); }
+
+    .stat-card .card-footer {
+        background-color: transparent !important; /* Ensure footer is transparent */
+        border-top: none !important; /* Remove top border from footer */
+    }
+
+    /* Animation for Quick Action Buttons */
+    .card-body .btn {
+        transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .card-body .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Chart Container Height */
+    .chart-card-body {
+        height: 400px; /* Adjust this value as needed */
+    }
+</style>
+{% endblock %}
+{% block title %}Dashboard - SAMS PMD{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">Welcome to SAMS Dashboard, {{ current_user.full_name if current_user.full_name else username }}!</h1>
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if num_low_stock_items > 0 %}
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert" data-aos="fade-up">
+                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> Low Stock Alert!</h5>
+                <p>You have <strong>{{ num_low_stock_items }}</strong> item(s) at or below their reorder threshold. Prompt action may be required.</p>
+                <hr>
+                <p class="mb-0"><a href="{{ url_for('inventory.report_low_stock') }}" class="alert-link fw-bold">View Low Stock Report <i class="bi bi-arrow-right-circle"></i></a></p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm h-100 stat-card stat-card-primary" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-body text-center">
+                    <div class="stat-card-icon-wrap mb-3">
+                        <i class="bi bi-box-seam-fill fs-2"></i>
+                    </div>
+                    <h5 class="card-title mb-1">Total Items</h5>
+                    <p class="card-text fs-1 fw-bold text-dark mb-2">{{ stats.total_items }}</p>
+                    <small class="text-muted">Active: {{ stats.active_items }}</small>
+                </div>
+                <a href="{{ url_for('inventory.list_items') }}" class="card-footer text-decoration-none">
+                    View Details <i class="bi bi-arrow-right-circle"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm h-100 stat-card stat-card-info" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-body text-center">
+                    <div class="stat-card-icon-wrap mb-3">
+                        <i class="bi bi-tags-fill fs-2"></i>
+                    </div>
+                    <h5 class="card-title mb-1">Item Categories</h5>
+                    <p class="card-text fs-1 fw-bold text-dark mb-2">{{ stats.total_categories }}</p>
+                    {# Placeholder for potential secondary text if needed, or remove div if not #}
+                    <div style="height: 1.25em;"></div> {# To maintain alignment if other cards have secondary text #}
+                </div>
+                <a href="{{ url_for('inventory.list_categories') }}" class="card-footer text-decoration-none">
+                    Manage Categories <i class="bi bi-arrow-right-circle"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm h-100 stat-card stat-card-success" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-body text-center">
+                    <div class="stat-card-icon-wrap mb-3">
+                        <i class="bi bi-tags-fill fs-2"></i>
+                    </div>
+                    <h5 class="card-title mb-1">Storage Locations</h5>
+                    <p class="card-text fs-1 fw-bold text-dark mb-2">{{ stats.total_locations }}</p>
+                    <small class="text-muted"><i class="bi bi-map-fill me-1"></i> All defined locations</small>
+                </div>
+                <a href="{{ url_for('locations.list_locations') }}" class="card-footer text-decoration-none">
+                    Manage Locations <i class="bi bi-arrow-right-circle"></i>
+                </a>
+            </div>
+        </div>
+        {% if current_user.role in ['admin', 'manager'] %}
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm h-100 stat-card stat-card-warning" data-aos="fade-up" data-aos-delay="400">
+                <div class="card-body text-center">
+                    <div class="stat-card-icon-wrap mb-3">
+                        <i class="bi bi-journal-check fs-2"></i>
+                    </div>
+                    <h5 class="card-title mb-1">Pending Requisitions</h5>
+                    <p class="card-text fs-1 fw-bold text-dark mb-2">{{ stats.pending_requisitions }}</p>
+                    <div style="height: 1.25em;"></div> {# To maintain alignment #}
+                </div>
+                <a href="{{ url_for('requisitions.list_all_requisitions', status='Pending') }}" class="card-footer text-decoration-none">
+                    View Requisitions <i class="bi bi-arrow-right-circle"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {# Add more cards here, e.g., Total Users for admin #}
+    </div>
+
+    <!-- Quick Actions Row -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm" data-aos="fade-up" data-aos-delay="500">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-lightning-charge-fill"></i> Quick Actions</h5></div>
+                <div class="card-body">
+                    <a href="{{ url_for('inventory.add_item') }}" class="btn btn-outline-primary me-2 mb-2"><i class="bi bi-plus-circle"></i> Add New Item</a>
+                    <a href="{{ url_for('stock.add_stock_movement') }}" class="btn btn-outline-success me-2 mb-2"><i class="bi bi-arrows-move"></i> Record Stock Movement</a>
+                    <a href="{{ url_for('requisitions.create_requisition') }}" class="btn btn-outline-info me-2 mb-2"><i class="bi bi-journal-plus"></i> Create Requisition</a>
+                    <a href="{{ url_for('stock.list_stock_movements') }}" class="btn btn-outline-secondary me-2 mb-2"><i class="bi bi-list-task"></i> View All Movements</a>
+                    {% if current_user.role == 'admin' %}
+                    {# <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-danger me-2 mb-2"><i class="bi bi-people-fill"></i> Manage Users</a> #}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4 mt-4">
+        <div class="col-lg-6 mb-3" data-aos="zoom-in-up" data-aos-delay="100">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-line-fill"></i> Stock Levels Overview</h5>
+                </div>
+                <div class="card-body chart-card-body">
+                    {# Canvas for the chart #}
+                    <canvas id="stockLevelsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3" data-aos="zoom-in-up" data-aos-delay="200">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Recent Stock Movements</h5>
+                </div>
+                <div class="card-body chart-card-body">
+                    <canvas id="recentMovementsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Ensure stock_chart_data is passed from your Flask view
+    const stockData = {{ stock_chart_data | tojson | safe if stock_chart_data else {'labels': [], 'quantities': []} | tojson | safe }};
+    const recentMovementsData = {{ recent_movements_chart_data | tojson | safe if recent_movements_chart_data else {'labels': [], 'data': []} | tojson | safe }};
+
+    if (stockData.labels.length > 0) {
+        const ctx = document.getElementById('stockLevelsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar', // or 'line', 'pie', etc.
+            data: {
+                labels: stockData.labels,
+                datasets: [{
+                    label: 'Current Stock Quantity',
+                    data: stockData.quantities,
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)', // Bootstrap primary with alpha
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allows chart to fill card body height better
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    } else {
+        // Optional: Display a message if no data
+        const chartCanvas = document.getElementById('stockLevelsChart');
+        if (chartCanvas.parentNode) {
+            chartCanvas.parentNode.innerHTML = '<p class="text-center text-muted">No stock data available to display chart.</p>';
+        }
+    }
+
+    // Initialize Recent Stock Movements Line Chart
+    if (recentMovementsData.labels.length > 0) {
+        const ctxLine = document.getElementById('recentMovementsChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: recentMovementsData.labels,
+                datasets: [{
+                    label: 'Stock Movements Count',
+                    data: recentMovementsData.data,
+                    borderColor: 'rgb(75, 192, 192)', // A nice teal color
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.1 // Makes the line slightly curved
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { // Ensure y-axis shows whole numbers for counts
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        const lineChartCanvas = document.getElementById('recentMovementsChart');
+        if (lineChartCanvas && lineChartCanvas.parentNode) {
+            lineChartCanvas.parentNode.innerHTML = '<p class="text-center text-muted">No recent movement data to display.</p>';
+        }
+    }
+});
+</script>
+{% endblock %}

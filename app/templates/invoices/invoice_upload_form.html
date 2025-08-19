@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Invoice - MediLogix{% endblock %}
+
+{% block content %}
+<h2>Upload New Invoice</h2>
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <form method="POST" action="" enctype="multipart/form-data">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="invoice_number" class="form-label">Invoice Number <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="invoice_number" name="invoice_number" value="{{ form_data.invoice_number if form_data else '' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="supplier_id" class="form-label">Supplier <span class="text-danger">*</span></label>
+                    <select class="form-select" id="supplier_id" name="supplier_id" required>
+                        <option value="" disabled {% if not form_data or not form_data.supplier_id %}selected{% endif %}>Select Supplier</option>
+                        {% for supplier in suppliers %}
+                        <option value="{{ supplier.id }}" {% if form_data and form_data.supplier_id == supplier.id|string %}selected{% endif %}>{{ supplier.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="invoice_date" class="form-label">Invoice Date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="invoice_date" name="invoice_date" value="{{ form_data.invoice_date if form_data else current_date }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
+                    <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="{{ form_data.amount if form_data else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="currency" class="form-label">Currency <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="currency" name="currency" value="{{ form_data.currency if form_data else 'USD' }}" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="due_date" class="form-label">Due Date</label>
+                    <input type="date" class="form-control" id="due_date" name="due_date" value="{{ form_data.due_date if form_data else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="Pending" {% if form_data and form_data.status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Paid" {% if form_data and form_data.status == 'Paid' %}selected{% endif %}>Paid</option>
+                        <option value="Overdue" {% if form_data and form_data.status == 'Overdue' %}selected{% endif %}>Overdue</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="invoice_file" class="form-label">Invoice File (PDF, Image) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="invoice_file" name="invoice_file" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="related_po_id" class="form-label">Related Purchase Order (Optional)</label>
+                    <select class="form-select" id="related_po_id" name="related_po_id">
+                        <option value="">None</option>
+                        {% for po in purchase_orders %}
+                        <option value="{{ po.id }}" {% if form_data and form_data.related_po_id == po.id|string %}selected{% endif %}>PO #{{ po.id }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="related_grn_id" class="form-label">Related GRN (Optional)</label>
+                    <select class="form-select" id="related_grn_id" name="related_grn_id">
+                        <option value="">None</option>
+                        {% for grn in grns %}
+                        <option value="{{ grn.id }}" {% if form_data and form_data.related_grn_id == grn.id|string %}selected{% endif %}>GRN #{{ grn.id }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="2">{{ form_data.notes if form_data else '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Upload Invoice</button>
+            <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

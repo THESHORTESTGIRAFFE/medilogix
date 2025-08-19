@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Items - SAMS PMD{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Inventory Items</h2>
+    <a href="{{ url_for('inventory.add_item') }}" class="btn btn-success">Add New Item</a> {# We'll create add_item route next #}
+    <form method="GET" action="{{ url_for('inventory.list_items') }}"> <!-- or 'inventory.list_items' -->
+    <div class="input-group mb-3">
+        <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ search_term or '' }}">
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </div>
+</form>
+
+</div>
+
+
+{% if items %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>SKU</th>
+                    <th>Category</th>
+                    <th>Unit</th>
+                    <th>Reorder Threshold</th>
+                <th>Current Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.sku if item.sku else 'N/A' }}</td>
+                    <td>{{ item.category_name if item.category_name else 'Uncategorized' }}</td>
+                    <td>{{ item.unit_of_measure if item.unit_of_measure else 'N/A' }}</td>
+                    <td>{{ "%.2f"|format(item.reorder_threshold) if item.reorder_threshold is not none else 'N/A' }}</td>
+                <td>{{ "%.2f"|format(item.current_stock) if item.current_stock is not none else 'N/A' }}</td>
+                    <td><span class="badge bg-{{ 'success' if item.is_active else 'secondary' }}">{{ 'Active' if item.is_active else 'Inactive' }}</span></td>
+                    <td>
+                        <a href="{{ url_for('inventory.view_item', item_id=item.id) }}" class="btn btn-sm btn-outline-info me-1" title="View Item"><i class="bi bi-eye"></i></a>
+                        <a href="{{ url_for('inventory.edit_item', item_id=item.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Edit Item"><i class="bi bi-pen"></i></a>
+                        <form action="{{ url_for('inventory.delete_item', item_id=item.id) }}" method="POST" class="d-inline" title="Delete Item" onsubmit="return confirm('Are you sure you want to delete this item? This action cannot be undone and will also remove related stock movements.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">No items found in inventory. <a href="{{ url_for('inventory.add_item') }}">Add one now!</a></div> {# Link to add_item #}
+{% endif %}
+{% endblock %}

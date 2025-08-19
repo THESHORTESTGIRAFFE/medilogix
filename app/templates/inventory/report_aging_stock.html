@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - SAMS PMD{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ title }}</h2>
+    <div>
+        <form method="GET" action="{{ url_for('inventory.report_aging_stock') }}" class="d-inline-flex align-items-center">
+            <label for="days_threshold_select" class="form-label me-2">Days Inactive:</label>
+            <select name="days" id="days_threshold_select" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                <option value="30" {% if days_threshold == 30 %}selected{% endif %}>30 Days</option>
+                <option value="60" {% if days_threshold == 60 %}selected{% endif %}>60 Days</option>
+                <option value="90" {% if days_threshold == 90 %}selected{% endif %}>90 Days</option>
+                <option value="180" {% if days_threshold == 180 %}selected{% endif %}>180 Days</option>
+                <option value="365" {% if days_threshold == 365 %}selected{% endif %}>365 Days</option>
+            </select>
+            {# <button type="submit" class="btn btn-sm btn-outline-primary">Refresh</button> #}
+        </form>
+    </div>
+</div>
+
+{% if items %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <p>This report shows active items with current stock that have not had an outward movement (issuance, disposal, transfer out, adjustment out) in the last <strong>{{ days_threshold }}</strong> days.
+        Items with no recorded outward movement will also be listed.</p>
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>SKU</th>
+                        <th>Category</th>
+                        <th>Current Stock</th>
+                        <th>Unit</th>
+                        <th>Last Outward Movement</th>
+                        <th>Days Since Last Movement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><a href="{{ url_for('inventory.view_item', item_id=item.id) }}">{{ item.name }}</a></td>
+                        <td>{{ item.sku if item.sku else 'N/A' }}</td>
+                        <td>{{ item.category_name if item.category_name else 'Uncategorized' }}</td>
+                        <td>{{ "%.2f"|format(item.current_stock) }}</td>
+                        <td>{{ item.unit_of_measure }}</td>
+                        <td>{{ item.last_outward_movement_date.strftime('%Y-%m-%d') if item.last_outward_movement_date else 'Never / No Record' }}</td>
+                        <td>{{ item.days_since_last_movement if item.days_since_last_movement is not none else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-success">No aging stock items found for the selected criteria ({{ days_threshold }} days).</div>
+{% endif %}
+{% endblock %}

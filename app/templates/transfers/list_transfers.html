@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Transfers - MediLogix{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Stock Transfers</h2>
+    <a href="{{ url_for('transfers.create_transfer') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle-fill"></i> Initiate New Transfer
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Status</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Transfer Date</th>
+                    <th>Initiated By</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in transfers %}
+                <tr>
+                    <td>{{ transfer.id }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if transfer.status == 'Pending' %}bg-warning text-dark
+                            {% elif transfer.status == 'In Transit' %}bg-info text-dark
+                            {% elif transfer.status == 'Completed' %}bg-success
+                            {% elif transfer.status == 'Cancelled' %}bg-secondary
+                            {% else %}bg-light text-dark{% endif %}">
+                            {{ transfer.status }}
+                        </span>
+                    </td>
+                    <td>{{ transfer.origin_location_name }}</td>
+                    <td>{{ transfer.destination_location_name }}</td>
+                    <td>{{ transfer.transfer_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ transfer.initiator_name }}</td>
+                    <td>
+                        <a href="{{ url_for('transfers.view_transfer', transfer_id=transfer.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No stock transfers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

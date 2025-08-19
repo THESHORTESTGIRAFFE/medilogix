@@ -1,0 +1,10 @@
+/* Custom SAMS PMD Styles */
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+/* Add more custom styles as the project grows */

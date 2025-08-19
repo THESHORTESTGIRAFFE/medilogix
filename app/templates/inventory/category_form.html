@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form_action }} Category - SAMS PMD{% endblock %}
+
+{% block content %}
+<h2>{{ form_action }} Item Category</h2>
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <form method="POST" action=""> {# Action URL will be current URL #}
+            <div class="mb-3">
+                <label for="name" class="form-label">Category Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ request.form.name if request.form.name else (category.name if category else '') }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{ request.form.description if request.form.description else (category.description if category else '') }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Category</button>
+            <a href="{{ url_for('inventory.list_categories') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

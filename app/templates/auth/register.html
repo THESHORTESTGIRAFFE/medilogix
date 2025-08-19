@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Register New Account - SAMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card mt-5 shadow-sm">
+            <div class="card-body p-4">
+                <div class="text-center mb-3">
+                    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="SAMS Logo" class="img-fluid" style="max-height: 100px;">
+                </div>
+                <h3 class="card-title text-center mb-4">Create SAMS Account</h3>
+                <form method="POST" action="{{ url_for('auth.register_page') }}">
+                    {# Add CSRF token here if using Flask-WTF: {{ form.csrf_token }} #}
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" value="{{ form_data.full_name if form_data else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ form_data.email if form_data else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ form_data.username if form_data else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="department_id" class="form-label">Department <span class="text-danger">*</span></label>
+                        <select class="form-select" id="department_id" name="department_id" required>
+                            <option value="" disabled {% if not form_data or not form_data.department_id %}selected{% endif %}>Select Department</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if form_data and form_data.department_id == dept.id|string %}selected{% endif %}>{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">User Role/Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="" disabled {% if not form_data or not form_data.role %}selected{% endif %}>Select Role</option>
+                            {# Consider restricting roles available for self-registration #}
+                            <option value="staff" {% if form_data and form_data.role == 'staff' %}selected{% endif %}>Staff</option>
+                            <option value="manager" {% if form_data and form_data.role == 'manager' %}selected{% endif %}>Manager</option>
+                            <option value="admin" {% if form_data and form_data.role == 'admin' %}selected{% endif %}>Administrator</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <p>Already have an account? <a href="{{ url_for('auth.login_page') }}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

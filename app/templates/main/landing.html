@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SAMS PMD{% endblock %}</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+
+<nav>
+  <a href="#" class="logo">Smart Storeroom, Seamless Health</a>
+
+  <div class="auth-buttons">
+    <a href="{{ url_for('auth.login_page') }}" class="login">Sign In</a>
+    <a href="{{ url_for('auth.register_page') }}" class="signup">Register</a>
+  </div>
+</nav>
+
+<main class="hero">
+  <div class="hero-content">
+    <h1>Welcome to SAMS</h1>
+    <p>The Storeroom Automation and Management System (SAMS) is your new, intuitive web-based platform designed to revolutionize how you track, manage, and allocate essential resources. Say goodbye to manual bottlenecks, misplaced items, and delayed reports. With SAMS, gain real-time visibility, enhance accountability, and optimize every aspect of your storeroom operations, empowering better public health delivery across Bulawayo.</p>
+    
+    <div class="stats-container">
+        <div class="stat-item">
+            <span class="stat-number">{{ total_requisition_items }}</span>
+            <span class="stat-label">Items Requisitioned</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">{{ total_users }}</span>
+            <span class="stat-label">Active Users</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">{{ total_locations }}</span>
+            <span class="stat-label">Locations</span>
+        </div>
+    </div>
+  </div>
+
+  <div class="hero-graphics">
+    <div class="gradient-orb"></div>
+    <div class="floating-cards">
+      <div class="card card-1"></div>
+      <div class="card card-2"></div>
+      <div class="card card-3"></div>
+    </div>
+  </div>
+</main>
+
+</html>

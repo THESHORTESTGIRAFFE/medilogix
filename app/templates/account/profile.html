@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - SAMS PMD{% endblock %}
+
+{% block content %}
+<h2>My Profile</h2>
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Update Your Information</h5>
+                <form method="POST" action="{{ url_for('account.profile') }}">
+                    {# CSRF token if using Flask-WTF #}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" readonly disabled>
+                        <small class="form-text text-muted">Username cannot be changed.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" value="{{ form_data.full_name if form_data else current_user.full_name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ form_data.email if form_data else current_user.email }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="department_id" class="form-label">Department <span class="text-danger">*</span></label>
+                        <select class="form-select" id="department_id" name="department_id" required>
+                            <option value="" disabled {% if not form_data.department_id and not current_user.department_id %}selected{% endif %}>Select Department</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" 
+                                    {% if form_data.department_id == dept.id|string %}selected
+                                    {% elif not form_data.department_id and current_user.department_id == dept.id %}selected
+                                    {% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <hr class="my-4">
+                    <h5 class="mb-3">Change Password (Optional)</h5>
+                    <p class="text-muted small">Leave these fields blank if you do not want to change your password.</p>
+
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" autocomplete="current-password">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" autocomplete="new-password">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_new_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" autocomplete="new-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Account Information</h5>
+                <p><strong>Username:</strong> {{ current_user.username }}</p>
+                <p><strong>Role:</strong> {{ current_user.role|title }}</p>
+                <p><strong>Last Login:</strong> 
+                    {% if current_user.last_login_at %}
+                        {{ current_user.last_login_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                    {% else %}
+                        Never
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

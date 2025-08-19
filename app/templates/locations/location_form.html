@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form_action }} Location - SAMS PMD{% endblock %}
+
+{% block content %}
+<h2>{{ form_action }} Item Location</h2>
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <form method="POST" action=""> {# Action URL will be current URL #}
+            <div class="mb-3">
+                <label for="name" class="form-label">Location Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ request.form.name if request.form.name else (location.name if location else '') }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{ request.form.description if request.form.description else (location.description if location else '') }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Location</button>
+            <a href="{{ url_for('locations.list_locations') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

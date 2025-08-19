@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form_action }} User - SAMS PMD{% endblock %}
+
+{% block content %}
+<h2 data-aos="fade-down">{{ form_action }} User</h2>
+<div class="card shadow-sm mt-3" data-aos="fade-up">
+    <div class="card-body" data-aos="fade-in" data-aos-delay="100">
+        <form method="POST" action=""> {# Action URL will be current URL (add or edit) #}
+            
+            <div class="mb-3">
+                <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="username" name="username" 
+                       value="{{ form_data.username if form_data else (user.username if user else '') }}" 
+                       {% if form_action != "Add New" %}readonly disabled{% else %}required{% endif %}>
+                {% if form_action != "Add New" %}<small class="form-text text-muted">Username cannot be changed after creation.</small>{% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="full_name" name="full_name" 
+                       value="{{ form_data.full_name if form_data else (user.full_name if user else '') }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" id="email" name="email" 
+                       value="{{ form_data.email if form_data else (user.email if user else '') }}" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="department_id" class="form-label">Department</label>
+                    <select class="form-select" id="department_id" name="department_id">
+                        <option value="">Select Department (Optional)</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}" 
+                                {% if form_data and form_data.department_id == dept.id|string %}selected
+                                {% elif user and user.department_id == dept.id and (not form_data or not form_data.department_id) %}selected
+                                {% endif %}>
+                            {{ dept.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="role" class="form-label">User Role <span class="text-danger">*</span></label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="" disabled {% if (not form_data or not form_data.role) and (not user or not user.role) %}selected{% endif %}>Select Role</option>
+                        {% for r in roles %}
+                        <option value="{{ r }}" 
+                                {% if form_data and form_data.role == r %}selected
+                                {% elif user and user.role == r and (not form_data or not form_data.role) %}selected
+                                {% endif %}>
+                            {{ r|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <h5 class="mb-3">
+                {% if form_action == "Add New" %}Set Password <span class="text-danger">*</span>{% else %}Change Password (Optional){% endif %}
+            </h5>
+            {% if form_action != "Add New" %}
+            <p class="text-muted small">Leave these fields blank if you do not want to change the password for {{ user.username }}.</p>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password {% if form_action == "Add New" %}<span class="text-danger">*</span>{% endif %}</label>
+                <input type="password" class="form-control" id="password" name="{{ 'password' if form_action == 'Add New' else 'new_password' }}" 
+                       autocomplete="new-password" {% if form_action == "Add New" %}required{% endif %}>
+            </div>
+
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Confirm Password {% if form_action == "Add New" %}<span class="text-danger">*</span>{% endif %}</label>
+                <input type="password" class="form-control" id="confirm_password" name="{{ 'confirm_password' if form_action == 'Add New' else 'confirm_new_password' }}" 
+                       autocomplete="new-password" {% if form_action == "Add New" %}required{% endif %}>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="true" 
+                       {% if (form_data and form_data.get('is_active') == 'true') or 
+                             (user and user.is_active and (not form_data or form_data.get('is_active') is none)) or 
+                             (form_action == 'Add New' and (not form_data or form_data.get('is_active') is none)) %}checked{% endif %}>
+                <label class="form-check-label" for="is_active">User is Active</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save User</button>
+            <a href="{{ url_for('admin.list_users') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

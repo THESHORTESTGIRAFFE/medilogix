@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ title or "Tracked Assets" }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{ title or "Tracked Assets" }}</h2>
+        <a href="{{ url_for('assets.add_tracked_asset') }}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Add Tracked Asset
+        </a>
+        <form method="GET" action="{{ url_for('assets.list_tracked_assets') }}">
+            <div class="input-group mb-3">
+                <input type="text" name="search" class="form-control" placeholder="Search assets..." value="{{ search_term or '' }}">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+    <hr>
+
+    {% include '_messages.html' %}
+
+    {% if assets %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Item Name</th>
+                    <th>Serial Number</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Office/Location</th>
+                    <th>Allocation Date</th>
+                    <th>Purchase Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>{{ asset.item_name }}</td>
+                    <td>{{ asset.serial_number }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if asset.status == 'Available' %}bg-success
+                            {% elif asset.status == 'Allocated' %}bg-primary
+                            {% elif asset.status == 'In Repair' %}bg-warning text-dark
+                            {% elif asset.status == 'Disposed' %}bg-secondary
+                            {% elif asset.status == 'Missing' %}bg-danger
+                            {% else %}bg-light text-dark
+                            {% endif %}">
+                            {{ asset.status }}
+                        </span>
+                    </td>
+                    <td>{{ asset.assigned_user_name or 'N/A' }}</td>
+                    <td>{{ asset.office_details or 'N/A' }}</td>
+                    <td>{{ asset.allocation_date.strftime('%Y-%m-%d %H:%M') if asset.allocation_date else 'N/A' }}</td>
+                    <td>{{ asset.purchase_date.strftime('%Y-%m-%d') if asset.purchase_date else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('assets.edit_tracked_asset', asset_id=asset.id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        {# Add view or other actions if needed #}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        No tracked assets found. <a href="{{ url_for('assets.add_tracked_asset') }}" class="alert-link">Add one now</a>.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

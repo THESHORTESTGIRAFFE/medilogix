@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ form_action }} Tracked Asset{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ form_action }} Tracked Asset
+        {% if asset and asset.item_name %}
+            <small class="text-muted">- {{ asset.item_name }}</small>
+        {% elif form_data and form_data.item_id and items %}
+            {% for item_opt in items %}
+                {% if item_opt.id == form_data.item_id|int %}
+                    <small class="text-muted">- {{ item_opt.name }}</small>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </h2>
+    <hr>
+
+    <form method="POST" class="needs-validation" novalidate>
+        
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="item_id" class="form-label">Item <span class="text-danger">*</span></label>
+                <select class="form-select" id="item_id" name="item_id" required {% if asset %}disabled{% endif %}>
+                    <option value="">Select Item...</option>
+                    {% for item_opt in items %}
+                        <option value="{{ item_opt.id }}" {% if (asset and asset.item_id == item_opt.id) or (form_data and form_data.item_id|int == item_opt.id) %}selected{% endif %}>
+                            {{ item_opt.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if asset %}<small class="form-text text-muted">Item cannot be changed after creation.</small>{% endif %}
+                <div class="invalid-feedback">Please select an item.</div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="serial_number" class="form-label">Serial Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="serial_number" name="serial_number" value="{{ form_data.serial_number if form_data else (asset.serial_number if asset else '') }}" required>
+                <div class="invalid-feedback">Serial number is required.</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                <select class="form-select" id="status" name="status" required>
+                    {% for stat in statuses %}
+                        <option value="{{ stat }}" {% if (form_data and form_data.status == stat) or (asset and asset.status == stat) %}selected{% endif %}>{{ stat }}</option>
+                    {% endfor %}
+                </select>
+                <div class="invalid-feedback">Please select a status.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="assigned_to_user_id" class="form-label">Assigned To User (if Allocated)</label>
+                <select class="form-select" id="assigned_to_user_id" name="assigned_to_user_id">
+                    <option value="">None</option>
+                    {% for user_opt in users %}
+                        <option value="{{ user_opt.id }}" {% if (form_data and form_data.assigned_to_user_id|int == user_opt.id) or (asset and asset.assigned_to_user_id == user_opt.id) %}selected{% endif %}>
+                            {{ user_opt.full_name }} ({{ user_opt.username }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="office_details" class="form-label">Office/Location Details (if Allocated)</label>
+            <input type="text" class="form-control" id="office_details" name="office_details" value="{{ form_data.office_details if form_data else (asset.office_details if asset else '') }}">
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="purchase_date" class="form-label">Purchase Date</label>
+                <input type="date" class="form-control" id="purchase_date" name="purchase_date" value="{{ form_data.purchase_date if form_data else (asset.purchase_date.strftime('%Y-%m-%d') if asset and asset.purchase_date else '') }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="warranty_expiry_date" class="form-label">Warranty Expiry Date</label>
+                <input type="date" class="form-control" id="warranty_expiry_date" name="warranty_expiry_date" value="{{ form_data.warranty_expiry_date if form_data else (asset.warranty_expiry_date.strftime('%Y-%m-%d') if asset and asset.warranty_expiry_date else '') }}">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="notes" class="form-label">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="3">{{ form_data.notes if form_data else (asset.notes if asset else '') }}</textarea>
+        </div>
+
+        <hr>
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('assets.list_tracked_assets') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-1"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Save Asset
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Basic Bootstrap validation script
+(function () {
+  'use strict'
+  var forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+</script>
+{% endblock %}

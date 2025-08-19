@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}View Purchase Order #{{ purchase_order.id }} - MediLogix{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Purchase Order #{{ purchase_order.id }} Details</h2>
+    <div>
+        <a href="{{ url_for('purchase_orders.edit_purchase_order', po_id=purchase_order.id) }}" class="btn btn-outline-primary me-2">Edit PO</a>
+        <a href="{{ url_for('purchase_orders.list_purchase_orders') }}" class="btn btn-secondary">Back to POs</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Purchase Order Information</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">PO #:</dt>
+            <dd class="col-sm-9">{{ purchase_order.id }}</dd>
+
+            <dt class="col-sm-3">Supplier:</dt>
+            <dd class="col-sm-9">{{ purchase_order.supplier_name }}</dd>
+
+            <dt class="col-sm-3">Order Date:</dt>
+            <dd class="col-sm-9">{{ purchase_order.order_date.strftime('%Y-%m-%d') }}</dd>
+
+            <dt class="col-sm-3">Expected Delivery:</dt>
+            <dd class="col-sm-9">{{ purchase_order.expected_delivery_date.strftime('%Y-%m-%d') if purchase_order.expected_delivery_date else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Total Amount:</dt>
+            <dd class="col-sm-9">${{ "%.2f"|format(purchase_order.total_amount) }}</dd>
+
+            <dt class="col-sm-3">Status:</dt>
+            <dd class="col-sm-9">
+                <span class="badge 
+                    {% if purchase_order.status == 'Draft' %}bg-secondary
+                    {% elif purchase_order.status == 'Pending' %}bg-warning text-dark
+                    {% elif purchase_order.status == 'Approved' %}bg-success
+                    {% elif purchase_order.status == 'Rejected' %}bg-danger
+                    {% elif purchase_order.status == 'Fulfilled' %}bg-info text-dark
+                    {% else %}bg-light text-dark{% endif %}">
+                    {{ purchase_order.status }}
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Notes:</dt>
+            <dd class="col-sm-9">{{ purchase_order.notes if purchase_order.notes else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Created At:</dt>
+            <dd class="col-sm-9">{{ purchase_order.created_at.strftime('%Y-%m-%d %H:%M:%S') if purchase_order.created_at else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Last Updated:</dt>
+            <dd class="col-sm-9">{{ purchase_order.updated_at.strftime('%Y-%m-%d %H:%M:%S') if purchase_order.updated_at else 'N/A' }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Items in Purchase Order</h5>
+    </div>
+    <div class="card-body">
+        {% if po_items %}
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Item Name (SKU)</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in po_items %}
+                <tr>
+                    <td>{{ item.item_name }} ({{ item.item_sku if item.item_sku else 'No SKU' }})</td>
+                    <td>{{ "%.2f"|format(item.quantity) }}</td>
+                    <td>${{ "%.2f"|format(item.unit_price) }}</td>
+                    <td>${{ "%.2f"|format(item.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No items found for this purchase order.</p>
+        {% endif %}
+    </div>
+</div>
+
+{# Placeholder for PO Actions (Approve/Reject/Fulfill) #}
+{% if purchase_order.status in ['Draft', 'Pending'] and current_user.role in ['admin', 'manager'] %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header"><h5 class="mb-0">PO Actions</h5></div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('purchase_orders.process_po_approval', po_id=purchase_order.id) }}">
+            <div class="mb-3">
+                <label for="rejection_reason" class="form-label">Reason for Rejection (Required if rejecting)</label>
+                <textarea name="rejection_reason" id="rejection_reason" class="form-control" rows="2" placeholder="Enter reason if rejecting..."></textarea>
+            </div>
+            <div class="d-flex justify-content-start">
+                <button type="submit" name="action" value="approve" class="btn btn-success me-2">
+                    <i class="bi bi-check-circle-fill"></i> Approve PO
+                </button>
+                <button type="submit" name="action" value="reject" class="btn btn-danger">
+                    <i class="bi bi-x-circle-fill"></i> Reject PO
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{# Placeholder for Goods Received #}
+{% if purchase_order.status == 'Approved' and current_user.role in ['admin', 'manager'] %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header"><h5 class="mb-0">Goods Receipt</h5></div>
+    <div class="card-body">
+        <p>Form to record goods received against this PO will go here.</p>
+        {# <a href="{{ url_for('purchase_orders.record_goods_receipt', po_id=purchase_order.id) }}" class="btn btn-primary">Record Goods Receipt</a> #}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

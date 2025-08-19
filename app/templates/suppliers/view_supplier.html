@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}View Supplier: {{ supplier.name }} - MediLogix{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Supplier: {{ supplier.name }}</h2>
+    <div>
+        <a href="{{ url_for('suppliers.edit_supplier', supplier_id=supplier.id) }}" class="btn btn-outline-primary me-2">Edit Supplier</a>
+        <a href="{{ url_for('suppliers.list_suppliers') }}" class="btn btn-secondary">Back to Suppliers</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Supplier Information</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Name:</dt>
+            <dd class="col-sm-9">{{ supplier.name }}</dd>
+
+            <dt class="col-sm-3">Contact Person:</dt>
+            <dd class="col-sm-9">{{ supplier.contact_person if supplier.contact_person else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Email:</dt>
+            <dd class="col-sm-9">{{ supplier.email if supplier.email else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Phone:</dt>
+            <dd class="col-sm-9">{{ supplier.phone if supplier.phone else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Address:</dt>
+            <dd class="col-sm-9">{{ supplier.address if supplier.address else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Payment Terms:</dt>
+            <dd class="col-sm-9">{{ supplier.payment_terms if supplier.payment_terms else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Rating:</dt>
+            <dd class="col-sm-9">{{ "%.2f"|format(supplier.rating) }} / 5.00</dd>
+
+            <dt class="col-sm-3">Blacklisted:</dt>
+            <dd class="col-sm-9">
+                {% if supplier.is_blacklisted %}
+                    <span class="badge bg-danger">Yes</span>
+                {% else %}
+                    <span class="badge bg-success">No</span>
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-3">Notes:</dt>
+            <dd class="col-sm-9">{{ supplier.notes if supplier.notes else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Created At:</dt>
+            <dd class="col-sm-9">{{ supplier.created_at.strftime('%Y-%m-%d %H:%M:%S') if supplier.created_at else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Last Updated:</dt>
+            <dd class="col-sm-9">{{ supplier.updated_at.strftime('%Y-%m-%d %H:%M:%S') if supplier.updated_at else 'N/A' }}</dd>
+        </dl>
+    </div>
+</div>
+
+{# Placeholder for history of orders, deliveries, disputes #}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Procurement History (Coming Soon)</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">Details about past purchase orders, deliveries, and disputes with this supplier will appear here in future updates.</p>
+    </div>
+</div>
+{% endblock %}

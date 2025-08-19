@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}View Requisition #{{ requisition.id }} - SAMS PMD{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Requisition #{{ requisition.id }} Details</h2>
+    <div>
+        {% if current_user.id == requisition.requester_id and requisition.status == 'Pending' %}
+            {# <a href="{{ url_for('requisitions.edit_requisition', requisition_id=requisition.id) }}" class="btn btn-outline-primary me-2">Edit</a> #}
+            {# <form action="{{ url_for('requisitions.cancel_requisition', requisition_id=requisition.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this requisition?');">
+                <button type="submit" class="btn btn-outline-warning me-2">Cancel</button>
+            </form> #}
+            <a href="{{ url_for('requisitions.print_requisition_form', requisition_id=requisition.id) }}" class="btn btn-outline-success me-2"><i class="bi bi-printer-fill"></i> Print Form (PDF)</a>
+        {% endif %}
+        <a href="{{ url_for('requisitions.list_my_requisitions') }}" class="btn btn-secondary">Back to My Requisitions</a>
+        {% if current_user.role in ['admin', 'manager'] %}
+        <a href="{{ url_for('requisitions.list_all_requisitions') }}" class="btn btn-outline-secondary ms-2">All Requisitions</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Requisition Information</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Requisition ID:</dt>
+            <dd class="col-sm-9">{{ requisition.id }}</dd>
+
+            <dt class="col-sm-3">Status:</dt>
+            <dd class="col-sm-9">
+                <span class="badge 
+                    {% if requisition.status == 'Pending' %}bg-warning text-dark
+                    {% elif requisition.status == 'Approved' %}bg-success
+                    {% elif requisition.status == 'Rejected' %}bg-danger
+                    {% elif requisition.status == 'Cancelled' %}bg-secondary
+                    {% elif requisition.status in ['Partially Fulfilled', 'Fulfilled'] %}bg-info text-dark
+                    {% else %}bg-light text-dark{% endif %}">
+                    {{ requisition.status }}
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Requester:</dt>
+            <dd class="col-sm-9">{{ requisition.requester_name }} ({{ requisition.requester_username }})</dd>
+
+            <dt class="col-sm-3">Department:</dt>
+            <dd class="col-sm-9">{{ requisition.department_name if requisition.department_name else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Request Date:</dt>
+            <dd class="col-sm-9">{{ requisition.request_date.strftime('%Y-%m-%d %H:%M:%S') if requisition.request_date else 'N/A' }}</dd>
+
+            <dt class="col-sm-3">Required By Date:</dt>
+            <dd class="col-sm-9">{{ requisition.required_by_date.strftime('%Y-%m-%d') if requisition.required_by_date else 'N/A' }}</dd>
+
+            {% if requisition.status == 'Approved' and requisition.approver_name %}
+            <dt class="col-sm-3">Approved By:</dt>
+            <dd class="col-sm-9">{{ requisition.approver_name }}</dd>
+            <dt class="col-sm-3">Approval Date:</dt>
+            <dd class="col-sm-9">{{ requisition.approval_date.strftime('%Y-%m-%d %H:%M:%S') if requisition.approval_date else 'N/A' }}</dd>
+            {% endif %}
+
+            {% if requisition.status == 'Rejected' and requisition.rejection_reason %}
+            <dt class="col-sm-3">Rejection Reason:</dt>
+            <dd class="col-sm-9">{{ requisition.rejection_reason }}</dd>
+                 {% if requisition.approver_name %}
+                 <dt class="col-sm-3">Processed By:</dt>
+                 <dd class="col-sm-9">{{ requisition.approver_name }}</dd>
+                 {% endif %}
+            {% endif %}
+
+            <dt class="col-sm-3">Overall Notes:</dt>
+            <dd class="col-sm-9">{{ requisition.notes if requisition.notes else 'N/A' }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Requested Items</h5>
+    </div>
+    <div class="card-body">
+        {% if items %}
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Item Name (SKU)</th>
+                    <th>Unit</th>
+                    <th>Qty Requested</th>
+                    <th>Qty Approved</th>
+                    <th>Qty Issued</th>
+                    <th>Item Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.item_name }} ({{ item.item_sku if item.item_sku else 'No SKU' }})</td>
+                    <td>{{ item.item_unit }}</td>
+                    <td>{{ "%.2f"|format(item.quantity_requested) }}</td>
+                    <td>{{ "%.2f"|format(item.quantity_approved) }}</td>
+                    <td>{{ "%.2f"|format(item.quantity_issued) }}</td>
+                    <td>{{ item.notes if item.notes else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No items found for this requisition.</p>
+        {% endif %}
+    </div>
+</div>
+
+{# Placeholder for Approval/Rejection Actions - To be implemented next #}
+{% if current_user.role in ['admin', 'manager'] and requisition.status == 'Pending' %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header"><h5 class="mb-0">Manager Actions</h5></div>
+    <div class="card-body" data-aos="fade-up">
+        <form method="POST" action="{{ url_for('requisitions.process_requisition_approval', requisition_id=requisition.id) }}">
+            <div class="mb-3">
+                <label for="rejection_reason" class="form-label">Reason for Rejection (Required if rejecting)</label>
+                <textarea name="rejection_reason" id="rejection_reason" class="form-control" rows="2" placeholder="Enter reason if rejecting..."></textarea>
+            </div>
+            <div class="d-flex justify-content-start">
+                <button type="submit" name="action" value="approve" class="btn btn-success me-2">
+                    <i class="bi bi-check-circle-fill"></i> Approve
+                </button>
+                <button type="submit" name="action" value="reject" class="btn btn-danger">
+                    <i class="bi bi-x-circle-fill"></i> Reject
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{# Placeholder for Stock Issuance - To be implemented after approval #}
+{% if requisition.status == 'Approved' or requisition.status == 'Partially Fulfilled' %}
+    {# And user has role to issue stock #}
+    {% if current_user.role in ['admin', 'manager'] %} {# Or a specific 'storekeeper' role #}
+    <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">Stock Issuance</h5></div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('requisitions.fulfill_requisition', requisition_id=requisition.id) }}" onsubmit="return confirm('Are you sure you want to issue stock for this requisition? This action cannot be undone.');">
+                <div class="row">
+                    <div class="col-md-8">
+                        <label for="location_id" class="form-label">Issue Stock From Location <span class="text-danger">*</span></label>
+                        <select class="form-select" id="location_id" name="location_id" required>
+                            <option value="" disabled selected>Select a storeroom or location...</option>
+                            {% for location in locations %}
+                            <option value="{{ location.id }}">{{ location.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select the location from which the items will be withdrawn.</div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-up-right"></i> Fulfill & Issue Stock
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

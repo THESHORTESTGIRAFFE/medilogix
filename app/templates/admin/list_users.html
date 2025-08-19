@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - SAMS PMD{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3" data-aos="fade-down">
+    <h2>Manage Users</h2>
+    <a href="{{ url_for('admin.add_user') }}" class="btn btn-success">Add New User</a>
+    <form method="GET" action="{{ url_for('admin.list_users') }}"> <!-- or 'inventory.list_items' -->
+    <div class="input-group mb-3">
+        <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ search_term or '' }}">
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </div>
+</form>
+
+</div>
+
+
+{% if users %}
+
+<div class="card shadow-sm" data-aos="fade-up">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_item in users %}
+                    <tr>
+                        <td>{{ user_item.full_name }}</td>
+                        <td>{{ user_item.username }}</td>
+                        <td>{{ user_item.email }}</td>
+                        <td>{{ user_item.role|title }}</td>
+                        <td>{{ user_item.department_name if user_item.department_name else 'N/A' }}</td>
+                        <td><span class="badge bg-{{ 'success' if user_item.is_active else 'secondary' }}">{{ 'Active' if user_item.is_active else 'Inactive' }}</span></td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_user', user_id=user_item.id) }}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                            {% if user_item.id != current_user.id %} {# Prevent self-delete button #}
+                            <form action="{{ url_for('admin.delete_user', user_id=user_item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete user {{ user_item.username }}? This action cannot be undone.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info" data-aos="fade-up">No users found. <a href="{{ url_for('admin.add_user') }}">Add one now!</a></div>
+{% endif %}
+{% endblock %}

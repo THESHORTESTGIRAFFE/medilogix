@@ -1,0 +1,33 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Virtual environment
+virtualenv/
+virtual-env/
+venv/
+env/
+
+# Database files
+*.sqlite3
+*.db
+
+# Test and build artifacts
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+
+# Uploaded files (for invoices, etc.)
+app/static/uploads/
+
+# Environment variables
+.env
+.flaskenv
+
+# Logs
+*.log

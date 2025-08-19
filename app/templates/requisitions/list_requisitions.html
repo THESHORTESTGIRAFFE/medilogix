@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - SAMS PMD{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3" data-aos="fade-down">
+    <h2>{{ title }}</h2>
+    {% if title == "My Requisitions" %}
+    <a href="{{ url_for('requisitions.create_requisition') }}" class="btn btn-success">Create New Requisition</a>
+    {% endif %}
+</div>
+
+{% if requisitions %}
+<div class="card shadow-sm" data-aos="fade-up">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Requester</th>
+                        <th>Department</th>
+                        <th>Request Date</th>
+                        <th>Required By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requisitions %}
+                    <tr>
+                        <td>{{ req.id }}</td>
+                        <td>{{ req.requester_name }}</td>
+                        <td>{{ req.department_name if req.department_name else 'N/A' }}</td>
+                        <td>{{ req.request_date.strftime('%Y-%m-%d %H:%M') if req.request_date else 'N/A' }}</td>
+                        <td>{{ req.required_by_date.strftime('%Y-%m-%d') if req.required_by_date else 'N/A' }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if req.status == 'Pending' %}bg-warning text-dark
+                                {% elif req.status == 'Approved' %}bg-success
+                                {% elif req.status == 'Rejected' %}bg-danger
+                                {% elif req.status == 'Cancelled' %}bg-secondary
+                                {% elif req.status in ['Partially Fulfilled', 'Fulfilled'] %}bg-info text-dark
+                                {% else %}bg-light text-dark{% endif %}">
+                                {{ req.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('requisitions.view_requisition', requisition_id=req.id) }}" class="btn btn-sm btn-outline-info">View</a>
+                            {# Add Edit/Cancel buttons based on status and role later #}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info" data-aos="fade-up">
+    No requisitions found. 
+    {% if title == "My Requisitions" %}
+    <a href="{{ url_for('requisitions.create_requisition') }}">Create one now!</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
