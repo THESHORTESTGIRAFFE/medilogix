@@ -56,6 +56,18 @@
     </div>
 </div>
 
+<div class="card shadow-sm mt-4">
+    <div class="card-body text-center">
+        <h5 class="card-title">Barcode</h5>
+        {% if barcode_path %}
+            <img src="{{ url_for('static', filename=barcode_path.split('/static/')[1]) }}" alt="Barcode for {{ item.name }}" style="max-width: 300px; height: auto;">
+            <p class="mt-2">SKU: {{ item.sku if item.sku else item.id }}</p>
+        {% else %}
+            <div class="alert alert-warning">Could not generate barcode for this item.</div>
+        {% endif %}
+    </div>
+</div>
+
 <div class="mt-4">
     <h4>Stock by Location</h4>
     {% if stock_by_location %}

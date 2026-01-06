@@ -306,232 +306,42 @@ CREATE TABLE `purchase_orders` (
   `status` enum('Pending','Approved','Rejected','Ordered','Partially Received','Received','Cancelled') NOT NULL DEFAULT 'Pending',
   `total_amount` decimal(12,2) DEFAULT NULL,
   `notes` text DEFAULT NULL,
-  `created_by_user_id` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `hash` varchar(64) DEFAULT NULL,
+  `previous_hash` varchar(64) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `purchase_orders`
---
-
-INSERT INTO `purchase_orders` (`id`, `supplier_id`, `order_date`, `expected_delivery_date`, `status`, `total_amount`, `notes`, `created_by_user_id`, `created_at`, `updated_at`) VALUES
-(1, 1, '2025-06-01', '2025-06-15', 'Ordered', 1500.00, 'Monthly order for essential medicines.', 1, '2025-06-01 10:00:00', '2025-06-05 11:00:00'),
-(2, 2, '2025-06-05', '2025-06-20', 'Pending', 750.50, 'Urgent order for PPE.', 2, '2025-06-05 14:30:00', '2025-06-05 14:30:00'),
-(3, 3, '2025-05-20', '2025-06-10', 'Received', 5000.00, 'New blood pressure monitors.', 1, '2025-05-20 09:00:00', '2025-06-10 16:00:00');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `purchase_order_items`
+-- Table structure for table `goods_received_notes`
 --
 
-CREATE TABLE `purchase_order_items` (
+CREATE TABLE `goods_received_notes` (
   `id` int(11) NOT NULL,
   `purchase_order_id` int(11) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  `quantity_ordered` decimal(10,2) NOT NULL,
-  `unit_price` decimal(10,2) NOT NULL,
-  `quantity_received` decimal(10,2) DEFAULT 0.00,
-  `notes` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `purchase_order_items`
---
-
-INSERT INTO `purchase_order_items` (`id`, `purchase_order_id`, `item_id`, `quantity_ordered`, `unit_price`, `quantity_received`, `notes`) VALUES
-(1, 1, 1, 1000.00, 0.50, 1000.00, 'Paracetamol 500mg'),
-(2, 1, 4, 200.00, 1.20, 200.00, 'Hand Sanitizer 500ml'),
-(3, 2, 2, 500.00, 0.80, 0.00, 'Surgical Gloves - Medium'),
-(4, 3, 3, 10.00, 500.00, 10.00, 'Automatic Blood Pressure Monitor');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `requisitions`
---
-
-CREATE TABLE `requisitions` (
-  `id` int(11) NOT NULL,
-  `requester_id` int(11) NOT NULL,
-  `department_id` int(11) DEFAULT NULL,
-  `status` enum('Pending','Approved','Rejected','Partially Fulfilled','Fulfilled','Cancelled') NOT NULL DEFAULT 'Pending',
-  `request_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `required_by_date` date DEFAULT NULL,
-  `approved_by_id` int(11) DEFAULT NULL,
-  `approval_date` timestamp NULL DEFAULT NULL,
-  `rejection_reason` text DEFAULT NULL,
+  `received_date` date NOT NULL,
+  `received_by_user_id` int(11) NOT NULL,
+  `delivery_note_number` varchar(255) DEFAULT NULL,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `hash` varchar(64) DEFAULT NULL,
+  `previous_hash` varchar(64) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `requisitions`
---
-
-INSERT INTO `requisitions` (`id`, `requester_id`, `department_id`, `status`, `request_date`, `required_by_date`, `approved_by_id`, `approval_date`, `rejection_reason`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 2, 1, 'Approved', '2023-02-28 22:00:00', '2023-03-10', 2, '2023-03-02 22:00:00', NULL, 'Routine replenishment for outpatient care.', '2023-02-28 22:00:00', '2023-03-02 22:00:00'),
-(2, 3, 4, 'Approved', '2023-02-28 22:00:00', '2023-03-08', 3, '2023-03-01 22:00:00', NULL, 'ICT transfer to COVID-19 center.', '2023-02-28 22:00:00', '2023-03-01 22:00:00'),
-(3, 3, 7, 'Approved', '2023-03-19 22:00:00', '2023-03-25', 3, '2023-03-20 22:00:00', NULL, 'Lab chemical stockout resolution.', '2023-03-19 22:00:00', '2023-03-20 22:00:00'),
-(4, 2, 5, 'Approved', '2023-03-09 22:00:00', '2023-03-15', 2, '2023-03-10 22:00:00', NULL, 'Office materials for Q1 forms.', '2023-03-09 22:00:00', '2023-03-10 22:00:00'),
-(5, 3, 6, 'Approved', '2023-02-09 22:00:00', '2023-02-20', 3, '2023-02-11 22:00:00', NULL, 'PC for nursing documentation pilot.', '2023-02-09 22:00:00', '2023-02-11 22:00:00'),
-(6, 4, 2, 'Approved', '2023-03-31 22:00:00', '2023-04-10', 4, '2023-04-02 22:00:00', NULL, 'ICT allocation to procurement team.', '2023-03-31 22:00:00', '2023-04-02 22:00:00'),
-(7, 5, 6, 'Approved', '2023-04-02 22:00:00', '2023-04-10', 4, '2023-04-03 22:00:00', NULL, 'Maternity restock of paracetamol.', '2023-04-02 22:00:00', '2023-04-03 22:00:00'),
-(8, 3, 3, 'Rejected', '2023-04-04 22:00:00', '2023-04-12', NULL, NULL, 'Overlapping request exists.', 'Requisition flagged by supervisor.', '2023-04-04 22:00:00', '2023-04-04 22:00:00');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `requisition_items`
+-- Table structure for table `audit_chain_metadata`
 --
 
-CREATE TABLE `requisition_items` (
-  `id` int(11) NOT NULL,
-  `requisition_id` int(11) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  `quantity_requested` decimal(10,2) NOT NULL,
-  `quantity_approved` decimal(10,2) DEFAULT 0.00,
-  `quantity_issued` decimal(10,2) DEFAULT 0.00,
-  `notes` text DEFAULT NULL
+CREATE TABLE `audit_chain_metadata` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `record_type` varchar(50) NOT NULL UNIQUE,
+  `last_hash` varchar(64) DEFAULT NULL,
+  `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `requisition_items`
---
-
-INSERT INTO `requisition_items` (`id`, `requisition_id`, `item_id`, `quantity_requested`, `quantity_approved`, `quantity_issued`, `notes`) VALUES
-(1, 1, 1, 50.00, 50.00, 50.00, 'Paracetamol for OPD use'),
-(2, 2, 4, 60.00, 60.00, 60.00, 'Hand sanitizers for COVID response'),
-(3, 3, 5, 30.00, 30.00, 30.00, 'Lab tubes needed for sample storage'),
-(4, 4, 6, 100.00, 100.00, 100.00, 'Copier paper for finance and HR'),
-(5, 5, 7, 1.00, 1.00, 1.00, 'Computer for patient records input'),
-(6, 6, 7, 1.00, 1.00, 1.00, 'ICT resource for procurement dashboard'),
-(7, 7, 1, 40.00, 40.00, 40.00, 'Replenishment for maternity wing'),
-(8, 8, 1, 30.00, 0.00, 0.00, 'Duplicate request detected and rejected');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `stock_movements`
---
-
-CREATE TABLE `stock_movements` (
-  `id` bigint(20) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  `location_id` int(11) DEFAULT NULL,
-  `quantity_changed` decimal(10,2) NOT NULL,
-  `movement_type` enum('initial_stock','receipt','issuance','adjustment_in','adjustment_out','transfer_out','transfer_in','disposal') NOT NULL,
-  `movement_date` datetime NOT NULL DEFAULT current_timestamp(),
-  `user_id` int(11) DEFAULT NULL,
-  `batch_number` varchar(100) DEFAULT NULL,
-  `expiry_date` date DEFAULT NULL,
-  `cost_per_unit` decimal(10,2) DEFAULT NULL,
-  `related_purchase_order_item_id` int(11) DEFAULT NULL,
-  `related_requisition_item_id` int(11) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `goods_received_note_id` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `stock_movements`
---
-
-INSERT INTO `stock_movements` (`id`, `item_id`, `location_id`, `quantity_changed`, `movement_type`, `movement_date`, `user_id`, `batch_number`, `expiry_date`, `cost_per_unit`, `related_purchase_order_id`, `related_requisition_id`, `notes`, `created_at`) VALUES
-(1, 1, 1, 100.00, 'initial_stock', '2023-01-10 00:00:00', 2, 'BCH23A01', '2025-03-15', 0.05, NULL, NULL, 'System opening balance.', '2023-01-09 22:00:00'),
-(2, 1, 1, 200.00, 'receipt', '2023-02-03 00:00:00', 3, 'BCH23A02', '2025-12-01', 0.05, '201', NULL, 'Supplier delivery from tender contract.', '2023-02-02 22:00:00'),
-(3, 1, 1, -50.00, 'issuance', '2023-02-08 00:00:00', 4, 'BCH23A02', '2025-12-01', 0.05, NULL, 301, 'Issued to outpatient clinic.', '2023-02-07 22:00:00'),
-(4, 2, 1, -10.00, 'adjustment_out', '2023-02-15 00:00:00', 5, 'GLOV23B01', '2024-11-20', 0.12, NULL, NULL, 'Stock damaged during transport.', '2023-02-14 22:00:00'),
-(5, 2, 1, 5.00, 'adjustment_in', '2023-02-16 00:00:00', 5, 'GLOV23B01', '2024-11-20', 0.12, NULL, NULL, 'Returned from unused theatre stock.', '2023-02-15 22:00:00'),
-(6, 4, 1, -60.00, 'transfer_out', '2023-03-01 00:00:00', 6, 'HS23M', '2024-10-10', 0.75, NULL, 302, 'Transferred to COVID-19 response centre.', '2023-02-28 22:00:00'),
-(7, 4, 2, 60.00, 'transfer_in', '2023-03-01 00:00:00', 7, 'HS23M', '2024-10-10', 0.75, NULL, 302, 'Received from central stores.', '2023-02-28 22:00:00'),
-(8, 3, 1, -1.00, 'disposal', '2023-03-10 00:00:00', 4, 'BP2023X', NULL, 45.00, NULL, NULL, 'Unit disposed due to calibration failure.', '2023-03-09 22:00:00'),
-(9, 5, 2, 150.00, 'receipt', '2023-03-22 00:00:00', 2, 'LABPACK-0323', '2025-03-30', 0.20, '202', NULL, 'Delivery from SciTech Labs.', '2023-03-21 22:00:00'),
-(10, 5, 2, -30.00, 'issuance', '2023-03-25 00:00:00', 5, 'LABPACK-0323', '2025-03-30', 0.20, NULL, 303, 'Issued to pathology unit.', '2023-03-24 22:00:00'),
-(11, 6, 1, 500.00, 'receipt', '2023-03-10 00:00:00', 3, 'COPY2023B', NULL, 0.07, '203', NULL, 'Ream shipment from Megastationery Ltd.', '2023-03-09 22:00:00'),
-(12, 6, 1, -100.00, 'issuance', '2023-03-13 00:00:00', 6, 'COPY2023B', NULL, 0.07, NULL, 304, 'Distributed to hospital admin offices.', '2023-03-12 22:00:00'),
-(13, 7, 2, 4.00, 'initial_stock', '2023-01-01 00:00:00', 2, 'ICT-2023-INIT', NULL, 600.00, NULL, NULL, 'Opening stock - admin ICT department.', '2022-12-31 22:00:00'),
-(14, 7, 2, -1.00, 'issuance', '2023-02-11 00:00:00', 3, 'ICT-2023-INIT', NULL, 600.00, NULL, 305, 'Issued to new pharmacy assistant.', '2023-02-10 22:00:00'),
-(15, 4, 1, -5.00, 'adjustment_out', '2023-03-17 00:00:00', 5, 'HS23M', '2024-10-10', 0.75, NULL, NULL, 'Broken bottle spillage.', '2023-03-16 22:00:00'),
-(16, 2, 2, -3.00, 'disposal', '2023-03-19 00:00:00', 4, 'GLOV23B01', '2024-11-20', 0.12, NULL, NULL, 'Expired gloves disposed.', '2023-03-18 22:00:00'),
-(17, 2, 2, 25.00, 'adjustment_in', '2023-03-20 00:00:00', 3, 'GLOV23B02', '2024-12-31', 0.12, NULL, NULL, 'Leftover from training returned to stores.', '2023-03-19 22:00:00'),
-(18, 3, 1, 2.00, 'receipt', '2023-03-28 00:00:00', 2, 'BP-MARCH', NULL, 47.00, '204', NULL, 'Procured from MedTech Solutions.', '2023-03-27 22:00:00'),
-(19, 3, 1, -1.00, 'issuance', '2023-04-02 00:00:00', 5, 'BP-MARCH', NULL, 47.00, NULL, 306, 'Issued to newly opened ward.', '2023-04-01 22:00:00'),
-(20, 1, 1, 150.00, 'receipt', '2023-04-05 00:00:00', 2, 'BCH23A03', '2026-01-01', 0.05, '205', NULL, 'Quarterly tender delivery.', '2023-04-04 22:00:00'),
-(21, 1, 1, -40.00, 'issuance', '2023-04-07 00:00:00', 4, 'BCH23A03', '2026-01-01', 0.05, NULL, 307, 'Issued to maternity ward.', '2023-04-06 22:00:00'),
-(22, 5, 2, -10.00, 'disposal', '2023-04-10 00:00:00', 6, 'LABPACK-0323', '2025-03-30', 0.20, NULL, NULL, 'Cracked test tubes discarded.', '2023-04-09 22:00:00'),
-(23, 6, 1, 200.00, 'receipt', '2023-04-12 00:00:00', 3, 'COPY2023C', NULL, 0.06, '206', NULL, 'Additional shipment - admin expansion.', '2023-04-11 22:00:00');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `tracked_assets`
---
-
-CREATE TABLE `tracked_assets` (
-  `id` int(11) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  `serial_number` varchar(255) NOT NULL,
-  `status` varchar(50) NOT NULL DEFAULT 'Available',
-  `assigned_to_user_id` int(11) DEFAULT NULL,
-  `office_details` varchar(255) DEFAULT NULL,
-  `allocation_date` datetime DEFAULT NULL,
-  `purchase_date` date DEFAULT NULL,
-  `warranty_expiry_date` date DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `tracked_assets`
---
-
-INSERT INTO `tracked_assets` (`id`, `item_id`, `serial_number`, `status`, `assigned_to_user_id`, `office_details`, `allocation_date`, `purchase_date`, `warranty_expiry_date`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 3, '1234', 'Allocated', NULL, 'Office 201', NULL, '2024-11-06', '2026-10-12', '', '2025-06-12 12:06:02', '2025-06-12 12:06:02'),
-(2, 3, '123478', 'Disposed', NULL, NULL, NULL, '2024-11-06', '2026-10-12', '', '2025-06-12 12:06:30', '2025-06-12 12:48:59'),
-(3, 7, 'HP0987', 'Allocated', 2, 'Reception', '2025-06-12 14:54:08', '2025-01-09', '2026-12-12', '', '2025-06-12 12:54:08', '2025-06-12 12:54:08'),
-(4, 7, 'HP0988', 'Allocated', 8, 'Reception, Jason Moyo', '2025-06-12 14:58:27', '2025-01-09', '2026-12-12', '', '2025-06-12 12:58:27', '2025-06-12 12:58:27'),
-(5, 7, 'ACER9328', 'Allocated', 10, '', '2025-06-12 15:00:23', '2024-07-19', '2027-03-12', '', '2025-06-12 13:00:23', '2025-06-12 13:00:23');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
-  `username` varchar(50) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `full_name` varchar(100) DEFAULT NULL,
-  `role` enum('admin','manager','staff') NOT NULL DEFAULT 'staff',
-  `department_id` int(11) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `is_active` tinyint(1) DEFAULT 1,
-  `last_login_at` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `username`, `password_hash`, `full_name`, `role`, `department_id`, `email`, `is_active`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 'admin', 'pbkdf2:sha256:600000$MVwiOwneUvsyggEK$fc6e7aeb66d06cd20478865496154364940468cacd47a95967bdc176387d28a8', 'Administrator', 'admin', 3, 'admin@test.com', 1, '2025-06-12 13:37:19', '2025-05-28 22:38:49', '2025-06-12 13:37:19'),
-(2, 'manager', 'pbkdf2:sha256:600000$jZuBlEbOT1oCC0we$fc86e7b7ff43a8b34f01b1b25002dcc066ff6ff8a37a3f70cddb40094ee1d83e', 'Noellen Ncube', 'manager', 1, 'manager@test.com', 1, '2025-06-09 13:37:15', '2025-06-08 15:24:32', '2025-06-11 12:54:03'),
-(3, 'test', 'pbkdf2:sha256:600000$IOHvALOsPp62boBw$f405b19e1591d48526883cb05bc22334c6801a1e8d88c53d8cbe5e3e1320d824', 'Sibo Sibanda', 'staff', 3, 'user@test.com', 1, '2025-06-12 13:36:56', '2025-06-09 13:23:20', '2025-06-12 13:36:56'),
-(4, 'jmadondo', 'pbkdf2:sha256:260000$abc123', 'Joshua Madondo', 'manager', 2, 'jmadondo@pmd.gov.zw', 1, '2023-05-01 06:15:32', '2023-01-10 07:00:00', '2023-05-01 06:15:32'),
-(5, 'tchirwa', 'pbkdf2:sha256:260000$def456', 'Tariro Chirwa', 'manager', 1, 'tchirwa@pmd.gov.zw', 1, '2023-05-03 12:45:20', '2023-02-12 08:22:00', '2023-05-03 12:45:20'),
-(6, 'kmoyo', 'pbkdf2:sha256:260000$ghi789', 'Kudakwashe Moyo', 'staff', 4, 'kmoyo@pmd.gov.zw', 1, '2023-05-02 14:10:55', '2023-03-01 09:00:00', '2023-05-02 14:10:55'),
-(7, 'rmakumbe', 'pbkdf2:sha256:260000$jkl012', 'Rudo Makumbe', 'staff', 3, 'rmakumbe@pmd.gov.zw', 1, '2023-05-04 07:22:12', '2023-03-15 06:45:00', '2023-05-04 07:22:12'),
-(8, 'phlatwayo', 'pbkdf2:sha256:260000$mno345', 'Panashe Hlatwayo', 'staff', 6, 'phlatwayo@pmd.gov.zw', 1, '2023-05-04 05:50:01', '2023-03-20 12:35:00', '2023-05-04 05:50:01'),
-(9, 'mchipato', 'pbkdf2:sha256:260000$pqr678', 'Munashe Chipato', 'admin', 2, 'mchipato@pmd.gov.zw', 1, '2023-05-05 10:00:00', '2023-01-25 07:30:00', '2023-05-05 10:00:00'),
-(10, 'nkatsande', 'pbkdf2:sha256:260000$stu901', 'Nyasha Katsande', 'staff', 5, 'nkatsande@pmd.gov.zw', 1, '2023-05-02 13:05:45', '2023-03-03 11:00:00', '2023-05-02 13:05:45'),
-(11, 'tmafukidze', 'pbkdf2:sha256:260000$vwx234', 'Tendai Mafukidze', 'staff', 7, 'tmafukidze@pmd.gov.zw', 1, '2023-05-01 08:30:00', '2023-02-18 10:15:00', '2023-05-01 08:30:00');
 
 --
 -- Indexes for dumped tables
@@ -591,6 +401,21 @@ ALTER TABLE `requisition_items`
   ADD PRIMARY KEY (`id`),
   ADD KEY `requisition_id` (`requisition_id`),
   ADD KEY `item_id` (`item_id`);
+
+--
+-- Indexes for table `goods_received_notes`
+--
+ALTER TABLE `goods_received_notes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `purchase_order_id` (`purchase_order_id`),
+  ADD KEY `received_by_user_id` (`received_by_user_id`);
+
+--
+-- Indexes for table `audit_chain_metadata`
+--
+ALTER TABLE `audit_chain_metadata`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `record_type` (`record_type`);
 
 --
 -- Indexes for table `stock_movements`
@@ -666,6 +491,18 @@ ALTER TABLE `requisition_items`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
+-- AUTO_INCREMENT for table `goods_received_notes`
+--
+ALTER TABLE `goods_received_notes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `audit_chain_metadata`
+--
+ALTER TABLE `audit_chain_metadata`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `stock_movements`
 --
 ALTER TABLE `stock_movements`
@@ -721,6 +558,13 @@ ALTER TABLE `stock_movements`
   ADD CONSTRAINT `stock_movements_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `stock_movements_ibfk_2` FOREIGN KEY (`location_id`) REFERENCES `item_locations` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `stock_movements_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `goods_received_notes`
+--
+ALTER TABLE `goods_received_notes`
+  ADD CONSTRAINT `goods_received_notes_ibfk_1` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `goods_received_notes_ibfk_2` FOREIGN KEY (`received_by_user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT;
 
 --
 -- Constraints for table `tracked_assets`

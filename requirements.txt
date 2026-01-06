@@ -1,7 +1,10 @@
-Flask
-Flask_Login
-PyMySQL
-weasyprint
-Werkzeug
-Blueprint
-APScheduler
+Flask==3.0.0
+Flask-Login==0.6.3
+Flask-Mail==0.9.1
+PyMySQL==1.1.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
+cryptography==41.0.5
+weasyprint==60.1
+Chart.js-- (via CDN)
+QuaggaJS-- (via CDN)

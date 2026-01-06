@@ -1,34 +1,43 @@
-from flask import Flask, redirect, url_for, render_template
+from flask import Flask, redirect, url_for, render_template, current_app
 import logging
+from logging.handlers import RotatingFileHandler
+import os
 from flask_login import LoginManager, current_user
 from .models import User # Import User model
 import datetime # Import datetime module
+from flask_mail import Mail
+
+mail = Mail()
 
 def create_app(config_class='config.Config'):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
 
     # Configure logging
-    logging.basicConfig(level=logging.INFO) # Basic logging configuration
     if not app.debug and not app.testing:
-        # More sophisticated logging for production can be added here
-        # For example, logging to a file:
-        # from logging.handlers import RotatingFileHandler
-        # file_handler = RotatingFileHandler('sams_app.log', maxBytes=10240, backupCount=10)
-        # file_handler.setFormatter(logging.Formatter(
-        #    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-        # ))
-        # file_handler.setLevel(logging.INFO)
-        # app.logger.addHandler(file_handler)
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+        file_handler = RotatingFileHandler('logs/medilogix.log', maxBytes=10240000, backupCount=10)
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+        ))
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
         app.logger.setLevel(logging.INFO)
+        app.logger.info('MediLogix startup')
     else:
-        app.logger.setLevel(logging.DEBUG) # More verbose logging in debug mode
+        logging.basicConfig(level=logging.DEBUG)
+        app.logger.setLevel(logging.DEBUG)
 
     app.logger.info('SAMS application starting up...')
 
     # db.py is at the project root. Import it directly.
     import db as project_db_module # Using an alias for clarity
     project_db_module.init_app(app)
+
+    # Initialize Flask-Mail
+    mail.init_app(app)
+
     # Initialize Flask-Login (to be fully implemented in auth phase)
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -49,6 +58,8 @@ def create_app(config_class='config.Config'):
     from .routes import suppliers as suppliers_bp # Import suppliers blueprint
     from .routes import purchase_orders as purchase_orders_bp # Import purchase_orders blueprint
     from .routes import grns as grns_bp # Import grns blueprint
+    from .routes import invoices as invoices_bp # Import invoices blueprint
+    from .routes import analytics as analytics_bp # Import analytics blueprint
 
     @app.route('/')
     def index():
@@ -92,9 +103,25 @@ def create_app(config_class='config.Config'):
     app.register_blueprint(purchase_orders_bp.bp) # Register purchase_orders blueprint
     app.register_blueprint(grns_bp.bp) # Register grns blueprint
     app.register_blueprint(invoices_bp.bp) # Register invoices blueprint
+    app.register_blueprint(analytics_bp.bp) # Register analytics blueprint
 
     @app.context_processor
     def inject_current_year():
-        return {'current_year': datetime.datetime.utcnow().year}
+        return {'current_year': datetime.datetime.now(datetime.UTC).year}
+
+    # Custom Error Handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        # Transaction rollback might be needed if using an ORM like SQLAlchemy
+        # db.session.rollback() 
+        app.logger.error(f'Server Error: {error}')
+        return render_template('errors/500.html'), 500
+
+    from . import cli
+    cli.init_app(app)
 
     return app

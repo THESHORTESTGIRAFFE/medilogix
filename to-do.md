@@ -10,12 +10,13 @@ Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **
 
 ### **2.1 Barcode & QR Integration**
 
+**Status:** <font color='green'>Completed</font>
+
 **Purpose:** Enable quick scanning of items during receipt, transfer, and issuance to minimize manual entry errors.
 **Steps:**
 
 1. **Select barcode/QR format**: Use Code128 for barcodes and QR for batch/expiry info.
 2. **Add generator**:
-
    * Backend: `python-barcode` or `qrcode` library.
    * Frontend: `JsBarcode` or `qrcodejs` for printing and viewing.
 3. **Print labels**: Create printable PDFs for inventory items.
@@ -26,13 +27,14 @@ Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **
 
 ### **2.2 Batch & Expiry Tracking**
 
+**Status:** <font color='green'>Completed</font>
+
 **Purpose:** Track each batch with expiry dates to prevent waste and ensure FIFO issuance.
 **Steps:**
 
 1. **Extend database**: Add `batch_number` and `expiry_date` to stock\_movements.
 2. **Modify receiving form**: Allow entry of multiple batches for same item.
 3. **Add expiry alerts**:
-
    * Daily cron job (`APScheduler`) checks for items expiring in 30, 60, 90 days.
    * Send email/SMS/WhatsApp notifications.
 4. **Integrate FIFO logic**: Always suggest oldest non-expired batch for issuance.
@@ -40,6 +42,8 @@ Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **
 ---
 
 ### **2.3 Stock Transfer Module**
+
+**Status:** <font color='green'>Completed</font>
 
 **Purpose:** Enable inter-facility item transfers with full tracking and approvals.
 **Steps:**
@@ -52,6 +56,8 @@ Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **
 ---
 
 ### **2.4 Low Stock & Reorder Alerts**
+
+**Status:** <font color='green'>Completed</font>
 
 **Purpose:** Avoid stockouts by triggering timely replenishment actions.
 **Steps:**
@@ -79,8 +85,13 @@ Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **
 
 ### **3.1 Supplier Directory**
 
+**Status:** <font color='green'>Completed</font>
+
 **Purpose:** Keep structured data on approved suppliers for better decision-making.
 **Steps:**
+Let
+
+
 
 1. **Suppliers table**: Name, contact, address, payment terms, rating.
 2. **Supplier profiles**: View history of orders, deliveries, disputes.
@@ -90,28 +101,34 @@ Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **
 
 ### **3.2 Purchase Order (PO) Module**
 
+**Status:** <font color='yellow'>Partially Implemented</font>
+
 **Purpose:** Generate formal requests to suppliers based on stock needs.
 **Steps:**
 
-1. **PO table**: Items, quantities, prices, supplier, expected delivery.
-2. **PO generation**: Manual creation or auto-generated from low stock alerts.
-3. **Approval process**: Dept head → Procurement officer → Financial approval.
-4. **Export formats**: PDF and CSV for emailing or uploading to government portals.
+1. **PO table**: `purchase_orders` and `purchase_order_items` tables. (Done)
+2. **PO generation**: Manual creation or auto-generated from low stock alerts. (Manual creation is implemented)
+3. **Approval process**: Dept head -> Procurement officer -> Financial approval. (Partially implemented)
+4. **Export formats**: PDF and CSV for emailing or uploading to government portals. (Done)
 
 ---
 
 ### **3.3 Goods Received Notes (GRNs)**
 
+**Status:** <font color='yellow'>Partially Implemented</font>
+
 **Purpose:** Confirm and document what was actually received from suppliers.
 **Steps:**
 
-1. **Match to PO**: GRN links directly to a PO.
-2. **Record variances**: Over/under-delivery noted for supplier performance review.
-3. **Stock update**: Items go into inventory upon GRN approval.
+1. **Match to PO**: GRN links directly to a PO. (Done)
+2. **Record variances**: Over/under-delivery noted for supplier performance review. (Partially implemented)
+3. **Stock update**: Items go into inventory upon GRN approval. (Done)
 
 ---
 
 ### **3.4 Invoice Upload & Tracking**
+
+**Status:** <font color='green'>Completed</font>
 
 **Purpose:** Maintain digital proof of supplier transactions.
 **Steps:**
@@ -131,6 +148,33 @@ Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **
 
 ---
 
-If you want, I can now **create an illustrated architecture diagram** showing **Phase 2 + Phase 3 integration** into the current MediLogix ecosystem so it’s clear for both developers and MoHCC decision-makers.
+## **🔒 Phase 4: Security & Audit**
 
-Do you want me to do that next?
+**Goal:** Enhance the security and auditability of the system.
+
+---
+
+### **4.1 Blockchain-Based Audit Trails**
+
+**Status:** <font color='green'>Completed</font>
+
+**Purpose:** Create an immutable and verifiable log of all critical transactions.
+**Steps:**
+
+1. **Database Schema Changes**: Added `hash` and `previous_hash` columns to `stock_movements`, `purchase_orders`, and `goods_received_notes` tables.
+2. **Hashing Logic Implementation**: Implemented a SHA256 hashing function in `app/utils.py` and integrated it into the creation of new records.
+3. **Verification Mechanism**: Created a CLI command `flask audit verify-chain` to traverse and verify the integrity of the chains.
+4. **Model Updates**: Updated the `PurchaseOrder` and `GoodsReceivedNote` models and created a `StockMovement` model to include the new attributes.
+
+---
+
+All planned features from the to-do list are now either completed or partially implemented.
+
+Here are some suggestions for next steps:
+*   **Finish implementing the PO approval process:** The current implementation is basic. A more robust system would involve notifications to the approvers and a more detailed audit trail of the approval process.
+*   **Improve the GRN process:** The variance recording is not explicit. A dedicated variance report would be useful.
+*   **Implement automated PO generation:** Based on low stock alerts.
+*   **Enhance the UI/UX:** The application is functional, but the user interface could be improved for better usability.
+*   **Write more tests:** To ensure the quality and stability of the application.
+
+What would you like to do next?

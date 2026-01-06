@@ -283,3 +283,108 @@ def receive_transfer(transfer_id):
         flash(f'Error receiving transfer: {str(e)}', 'danger')
 
     return redirect(url_for('transfers.view_transfer', transfer_id=transfer_id))
+
+@bp.route('/<int:transfer_id>/reject', methods=['POST'])
+@login_required
+@roles_required(['admin', 'manager'])
+def reject_transfer(transfer_id):
+    transfer = query_db("SELECT * FROM stock_transfers WHERE id = %s", (transfer_id,), one=True)
+
+    if not transfer:
+        flash('Stock Transfer not found.', 'danger')
+        return redirect(url_for('transfers.list_transfers'))
+
+    if transfer['status'] not in ['Pending', 'In Transit']:
+        flash(f"This transfer cannot be rejected as it is already {transfer['status']}.", 'warning')
+        return redirect(url_for('transfers.view_transfer', transfer_id=transfer_id))
+
+    try:
+        # Update transfer status to Cancelled
+        query_db("UPDATE stock_transfers SET status = %s WHERE id = %s", ('Cancelled', transfer_id), commit=True)
+
+        # Reverse the stock movements
+        transfer_items = query_db("SELECT * FROM stock_transfer_items WHERE transfer_id = %s", (transfer_id,))
+        for item in transfer_items:
+            # Create a 'transfer_in' movement at the origin location to reverse the 'transfer_out'
+            query_db("""
+                INSERT INTO stock_movements 
+                (item_id, location_id, quantity_changed, movement_type, movement_date, user_id, 
+                 batch_number, expiry_date, notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                item['item_id'], transfer['origin_location_id'], item['quantity_sent'], 'transfer_in', 
+                datetime.datetime.now(), current_user.id, item['batch_number'], item['expiry_date'],
+                f"Reversal for rejected Transfer #{transfer_id}"
+            ), commit=True)
+
+        log_audit_action(f"Stock Transfer Rejected: ID {transfer_id}", f"Rejected by {current_user.username}")
+        flash(f'Stock Transfer #{transfer_id} successfully rejected and stock reversed.', 'success')
+
+    except Exception as e:
+        current_app.logger.error(f"Error rejecting transfer {transfer_id} by {current_user.username}: {str(e)}")
+        flash(f'Error rejecting transfer: {str(e)}', 'danger')
+
+    return redirect(url_for('transfers.view_transfer', transfer_id=transfer_id))
+
+@bp.route('/<int:transfer_id>/receive_partially', methods=['POST'])
+@login_required
+@roles_required(['admin', 'manager'])
+def receive_partially(transfer_id):
+    transfer = query_db("SELECT * FROM stock_transfers WHERE id = %s", (transfer_id,), one=True)
+
+    if not transfer:
+        flash('Stock Transfer not found.', 'danger')
+        return redirect(url_for('transfers.list_transfers'))
+
+    if transfer['status'] not in ['Pending', 'In Transit']:
+        flash(f"This transfer cannot be received as it is already {transfer['status']}.", 'warning')
+        return redirect(url_for('transfers.view_transfer', transfer_id=transfer_id))
+
+    try:
+        total_sent = 0
+        total_received = 0
+        
+        transfer_items = query_db("SELECT * FROM stock_transfer_items WHERE transfer_id = %s", (transfer_id,))
+        
+        for item in transfer_items:
+            quantity_received_str = request.form.get(f'quantity_received_{item["id"]}')
+            quantity_received = float(quantity_received_str) if quantity_received_str else 0.0
+
+            if quantity_received > item['quantity_sent']:
+                flash(f"Quantity received for item {item['id']} cannot be more than quantity sent.", 'danger')
+                return redirect(url_for('transfers.view_transfer', transfer_id=transfer_id))
+
+            if quantity_received > 0:
+                # Create 'transfer_in' movement at destination
+                query_db("""
+                    INSERT INTO stock_movements 
+                    (item_id, location_id, quantity_changed, movement_type, movement_date, user_id, 
+                     batch_number, expiry_date, notes)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    item['item_id'], transfer['destination_location_id'], quantity_received, 'transfer_in', 
+                    datetime.datetime.now(), current_user.id, item['batch_number'], item['expiry_date'],
+                    f"Partial receipt for Transfer #{transfer_id}"
+                ), commit=True)
+
+            # Update quantity_received in stock_transfer_items
+            query_db("UPDATE stock_transfer_items SET quantity_received = %s WHERE id = %s", (quantity_received, item['id']), commit=True)
+            
+            total_sent += item['quantity_sent']
+            total_received += quantity_received
+
+        # Update transfer status
+        new_status = 'Completed' if total_received >= total_sent else 'Partially Completed'
+        query_db("UPDATE stock_transfers SET status = %s, completed_by_user_id = %s, completion_date = %s WHERE id = %s",
+                 (new_status, current_user.id, datetime.datetime.now(), transfer_id), commit=True)
+
+        log_audit_action(f"Stock Transfer Partially Received: ID {transfer_id}", f"Received by {current_user.username}. Total received: {total_received}/{total_sent}")
+        flash(f'Stock Transfer #{transfer_id} processed. Status: {new_status}', 'success')
+
+    except ValueError:
+        flash('Invalid quantity entered. Please enter valid numbers.', 'danger')
+    except Exception as e:
+        current_app.logger.error(f"Error partially receiving transfer {transfer_id} by {current_user.username}: {str(e)}")
+        flash(f'Error processing partial receipt: {str(e)}', 'danger')
+
+    return redirect(url_for('transfers.view_transfer', transfer_id=transfer_id))

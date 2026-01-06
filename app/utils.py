@@ -4,6 +4,10 @@ from db import query_db # Assuming db.py is at the project root
 from functools import wraps
 import datetime
 from flask import abort
+import barcode
+from barcode.writer import ImageWriter
+import qrcode
+import io
 
 def log_audit_action(action, details=None, user_id=None):
     """Logs an action to the audit_logs table."""
@@ -64,14 +68,16 @@ def get_item_stock_movements(item_id, limit=50):
 
 def get_low_stock_items(threshold_multiplier=1.0):
     """
-    Retrieves items that are at or below their reorder threshold.
-    A threshold_multiplier can be used to flag items nearing their reorder point
-    (e.g., multiplier of 1.2 means flag if stock is <= 120% of threshold).
+    Retrieves items that are at or below their reorder threshold, including preferred supplier info.
     """
     items_query = """
-        SELECT i.id, i.name, i.sku, i.unit_of_measure, i.reorder_threshold, ic.name as category_name
+        SELECT 
+            i.id, i.name, i.sku, i.unit_of_measure, i.reorder_threshold, 
+            i.preferred_supplier_id, s.name as preferred_supplier_name, 
+            ic.name as category_name
         FROM items i
         LEFT JOIN item_categories ic ON i.category_id = ic.id
+        LEFT JOIN suppliers s ON i.preferred_supplier_id = s.id
         WHERE i.is_active = TRUE AND i.reorder_threshold > 0;
     """
     all_items_with_threshold = query_db(items_query)
@@ -90,8 +96,11 @@ def get_low_stock_items(threshold_multiplier=1.0):
         item_stock = current_stock_map.get(item['id'], 0)
         if item_stock <= (float(item['reorder_threshold']) * threshold_multiplier):
             item['current_stock'] = item_stock
+            # Calculate the quantity to reorder to bring stock up to the threshold
+            item['reorder_quantity'] = float(item['reorder_threshold']) - item_stock
             low_stock_items.append(item)
-    return sorted(low_stock_items, key=lambda x: x['name'])
+            
+    return sorted(low_stock_items, key=lambda x: (x['preferred_supplier_name'] is None, x['preferred_supplier_name'], x['name']))
 
 def roles_required(roles):
     """
@@ -189,3 +198,42 @@ def utility_flash_messages_contain_category(category_filter='danger', req=None):
         if any(category == category_filter for category, _ in raw_flashes_in_session):
             return True
     return False
+
+
+import hashlib
+import json
+
+def calculate_hash(data):
+    """Calculates a SHA256 hash for a given dictionary."""
+    # Ensure consistent ordering by sorting keys
+    encoded_data = json.dumps(data, sort_keys=True, default=str).encode('utf-8')
+    return hashlib.sha256(encoded_data).hexdigest()
+
+def generate_barcode_image(data, filename):
+    """
+    Generates a Code128 barcode image and saves it.
+    """
+    try:
+        EAN = barcode.get_barcode_class('code128')
+        ean = EAN(data, writer=ImageWriter())
+        # Save the barcode image
+        filepath = f"app/static/barcodes/{filename}"
+        ean.save(filepath)
+        return f"/static/barcodes/{filename}.png"
+    except Exception as e:
+        current_app.logger.error(f"Failed to generate barcode for data '{data}': {str(e)}")
+        return None
+
+def generate_qrcode_image(data, filename):
+    """
+    Generates a QR code image and saves it.
+    """
+    try:
+        img = qrcode.make(data)
+        # Save the QR code image
+        filepath = f"app/static/qrcodes/{filename}.png"
+        img.save(filepath)
+        return f"/static/qrcodes/{filename}.png"
+    except Exception as e:
+        current_app.logger.error(f"Failed to generate QR code for data '{data}': {str(e)}")
+        return None

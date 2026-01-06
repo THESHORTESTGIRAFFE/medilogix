@@ -101,14 +101,73 @@
 {% if transfer.status == 'Pending' or transfer.status == 'In Transit' %}
     {% if current_user.role in ['admin', 'manager'] or current_user.department_id == transfer.destination_location_id %} {# Simplified check #}
     <div class="card shadow-sm mb-4">
-        <div class="card-header"><h5 class="mb-0">Receive Transfer</h5></div>
-        <div class="card-body">
-            <p>Confirm receipt of items for this transfer.</p>
-            <form method="POST" action="{{ url_for('transfers.receive_transfer', transfer_id=transfer.id) }}" onsubmit="return confirm('Are you sure you want to mark this transfer as received? This will update stock at the destination.');">
+        <div class="card-header"><h5 class="mb-0">Actions</h5></div>
+        <div class="card-body d-flex gap-2">
+            <!-- Full Receive Form -->
+            <form method="POST" action="{{ url_for('transfers.receive_transfer', transfer_id=transfer.id) }}" onsubmit="return confirm('Are you sure you want to mark this transfer as fully received? This will update stock at the destination.');">
                 <button type="submit" class="btn btn-success">
-                    <i class="bi bi-check-circle-fill"></i> Mark as Received
+                    <i class="bi bi-check-circle-fill"></i> Receive Full Order
                 </button>
             </form>
+
+            <!-- Partial Receive Button -->
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#partialReceiveModal">
+                <i class="bi bi-box-seam"></i> Receive Partially
+            </button>
+
+            <!-- Reject Form -->
+            <form method="POST" action="{{ url_for('transfers.reject_transfer', transfer_id=transfer.id) }}" onsubmit="return confirm('Are you sure you want to reject this transfer? This action cannot be undone.');">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-x-circle-fill"></i> Reject Transfer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Partial Receive Modal -->
+    <div class="modal fade" id="partialReceiveModal" tabindex="-1" aria-labelledby="partialReceiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" action="{{ url_for('transfers.receive_partially', transfer_id=transfer.id) }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="partialReceiveModalLabel">Receive Transfer Partially</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Enter the actual quantity received for each item. Leave blank or enter 0 if an item was not received.</p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Batch</th>
+                                    <th>Qty Sent</th>
+                                    <th>Qty Received</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.item_name }}</td>
+                                    <td>{{ item.batch_number or 'N/A' }}</td>
+                                    <td>{{ "%.2f"|format(item.quantity_sent) }}</td>
+                                    <td>
+                                        <input type="number" name="quantity_received_{{ item.id }}" class="form-control" step="0.01" min="0" max="{{ item.quantity_sent }}" placeholder="0.00">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="mb-3">
+                            <label for="reception_notes" class="form-label">Notes (optional)</label>
+                            <textarea name="reception_notes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit Partial Receipt</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     {% endif %}

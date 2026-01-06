@@ -167,7 +167,8 @@ class Supplier:
 
 class PurchaseOrder:
     def __init__(self, id, supplier_id, order_date, status='Draft', expected_delivery_date=None, 
-                 total_amount=0.00, notes=None, created_at=None, updated_at=None, supplier_name=None):
+                 total_amount=0.00, notes=None, created_at=None, updated_at=None, supplier_name=None, 
+                 hash=None, previous_hash=None):
         self.id = id
         self.supplier_id = supplier_id
         self.order_date = order_date
@@ -178,6 +179,8 @@ class PurchaseOrder:
         self.created_at = created_at
         self.updated_at = updated_at
         self.supplier_name = supplier_name # For display
+        self.hash = hash
+        self.previous_hash = previous_hash
 
 class PurchaseOrderItem:
     def __init__(self, id, purchase_order_id, item_id, quantity, unit_price=0.00, 
@@ -195,7 +198,7 @@ class PurchaseOrderItem:
 class GoodsReceivedNote:
     def __init__(self, id, purchase_order_id, received_date, received_by_user_id, 
                  delivery_note_number=None, notes=None, created_at=None, updated_at=None, 
-                 purchase_order_number=None, received_by_user_name=None):
+                 purchase_order_number=None, received_by_user_name=None, hash=None, previous_hash=None, file_path=None):
         self.id = id
         self.purchase_order_id = purchase_order_id
         self.received_date = received_date
@@ -206,6 +209,9 @@ class GoodsReceivedNote:
         self.updated_at = updated_at
         self.purchase_order_number = purchase_order_number # For display
         self.received_by_user_name = received_by_user_name # For display
+        self.hash = hash
+        self.previous_hash = previous_hash
+        self.file_path = file_path
 
 class GoodsReceivedNoteItem:
     def __init__(self, id, grn_id, item_id, quantity_received, batch_number=None, 
@@ -221,6 +227,27 @@ class GoodsReceivedNoteItem:
         self.item_name = item_name # For display
         self.item_sku = item_sku # For display
         self.item_unit = item_unit # For display
+
+class StockMovement:
+    def __init__(self, id, item_id, location_id, quantity_changed, movement_type, movement_date, user_id, 
+                 batch_number=None, expiry_date=None, cost_per_unit=None, related_purchase_order_id=None, 
+                 related_requisition_id=None, notes=None, created_at=None, hash=None, previous_hash=None):
+        self.id = id
+        self.item_id = item_id
+        self.location_id = location_id
+        self.quantity_changed = quantity_changed
+        self.movement_type = movement_type
+        self.movement_date = movement_date
+        self.user_id = user_id
+        self.batch_number = batch_number
+        self.expiry_date = expiry_date
+        self.cost_per_unit = cost_per_unit
+        self.related_purchase_order_id = related_purchase_order_id
+        self.related_requisition_id = related_requisition_id
+        self.notes = notes
+        self.created_at = created_at
+        self.hash = hash
+        self.previous_hash = previous_hash
 
 class Invoice:
     def __init__(self, id, invoice_number, supplier_id, invoice_date, amount, currency='USD', 

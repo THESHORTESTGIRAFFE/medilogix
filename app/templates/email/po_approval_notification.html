@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Order Approval Request</title>
+</head>
+<body>
+    <p>Dear User,</p>
+    <p>
+        Purchase Order #{{ po_id }} has been approved and is now pending your approval with the status: <strong>{{ new_status }}</strong>.
+    </p>
+    <p>
+        Please log in to the system to review and take action.
+    </p>
+    <p>
+        <a href="{{ url_for('purchase_orders.view_purchase_order', po_id=po_id, _external=True) }}">Click here to view the Purchase Order</a>
+    </p>
+    <p>Thank you,</p>
+    <p>The MediLogix Team</p>
+</body>
+</html>

@@ -112,7 +112,7 @@ def view_supplier(supplier_id):
     
     supplier = Supplier(**supplier_data)
 
-    # Placeholder for history of orders, deliveries, disputes (Phase 3.2, 3.3, 3.4)
-    # For now, just display supplier details.
+    # Get purchase order history
+    purchase_orders = query_db("SELECT * FROM purchase_orders WHERE supplier_id = %s ORDER BY order_date DESC", (supplier_id,))
 
-    return render_template('suppliers/view_supplier.html', supplier=supplier)
+    return render_template('suppliers/view_supplier.html', supplier=supplier, purchase_orders=purchase_orders)

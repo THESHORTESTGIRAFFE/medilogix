@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Predictive Analytics - MediLogix{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+  <div class="col-md-6">
+    <h2 class="mb-0"><i class="bi bi-graph-up-arrow text-primary"></i>
+      Predictive Analytics</h2>
+    <p class="text-muted">Forecasting stock depletion based on 30-day
+      consumption patterns.</p>
+  </div>
+  <div class="col-md-6 text-md-end">
+    <span class="badge bg-info p-2"><i class="bi bi-info-circle"></i> Analysis
+      updated: {{ now.strftime('%Y-%m-%d %H:%M') if now else 'Today' }}</span>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Trend Chart -->
+  <div class="col-lg-8 mb-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">Monthly Consumption Trend (Last 6 Months)</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="trendChart" style="max-height: 350px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Critical Stockouts -->
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow-sm border-danger h-100">
+      <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-exclamation-octagon"></i> Predicted
+          Stockouts (Next 14 Days)</h5>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for item in critical_items %}
+          <li
+            class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <span class="fw-bold">{{ item.name }}</span><br>
+              <small class="text-muted">Stock: {{ item.current_stock }} {{
+                item.unit }}</small>
+            </div>
+            <span
+              class="badge {{ 'bg-danger' if item.days_remaining <= 3 else 'bg-warning text-dark' }} rounded-pill">
+              {{ item.days_remaining }} days left
+            </span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-center text-muted py-4">
+            <i class="bi bi-check-circle fs-2 text-success"></i><br>
+            No immediate stockouts predicted based on current usage.
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-2">
+  <div
+    class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Full Stock Forecast List</h5>
+    <div class="input-group input-group-sm w-25">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="text" id="forecastSearch" class="form-control"
+        placeholder="Search items...">
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="forecastTable">
+        <thead class="table-light">
+          <tr>
+            <th>Item Name</th>
+            <th>Category</th>
+            <th>Current Stock</th>
+            <th>Consumption Rate (/day)</th>
+            <th>Estimated Days Left</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in forecast_data %}
+          <tr>
+            <td class="fw-medium">{{ item.name }}</td>
+            <td>{{ item.category or 'N/A' }}</td>
+            <td>{{ item.current_stock }} {{ item.unit }}</td>
+            <td>{{ item.daily_rate }} {{ item.unit }}</td>
+            <td class="fw-bold">
+              {% if item.days_remaining == 999 %}
+              <span class="text-success">99+ days</span>
+              {% elif item.days_remaining == 0 and item.current_stock <= 0 %}
+                <span class="text-danger">Stockout</span>
+                {% else %}
+                {{ item.days_remaining }} days
+                {% endif %}
+            </td>
+            <td>
+              {% if item.days_remaining <= 7 %} <span class="badge bg-danger">
+                Critical</span>
+                {% elif item.days_remaining <= 30 %} <span
+                  class="badge bg-warning text-dark">Watch</span>
+                  {% else %}
+                  <span class="badge bg-success">Stable</span>
+                  {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Trend Chart
+    const trendData = {{ trend_chart_data | tojson | safe
+  }};
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trendData.labels,
+      datasets: [{
+        label: 'Units Consumed',
+        data: trendData.values,
+        borderColor: '#22d3ee', // Cyan
+        backgroundColor: 'rgba(34, 211, 238, 0.1)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // Simple Search
+  document.getElementById('forecastSearch').addEventListener('input', function (e) {
+    const term = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#forecastTable tbody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+    });
+</script>
+{% endblock %}

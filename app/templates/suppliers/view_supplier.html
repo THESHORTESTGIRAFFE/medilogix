@@ -59,13 +59,39 @@
     </div>
 </div>
 
-{# Placeholder for history of orders, deliveries, disputes #}
 <div class="card shadow-sm mb-4">
     <div class="card-header">
-        <h5 class="mb-0">Procurement History (Coming Soon)</h5>
+        <h5 class="mb-0">Purchase Order History</h5>
     </div>
     <div class="card-body">
-        <p class="text-muted">Details about past purchase orders, deliveries, and disputes with this supplier will appear here in future updates.</p>
+        {% if purchase_orders %}
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>PO ID</th>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for po in purchase_orders %}
+                <tr>
+                    <td>{{ po.id }}</td>
+                    <td>{{ po.order_date.strftime('%Y-%m-%d') }}</td>
+                    <td><span class="badge bg-secondary">{{ po.status }}</span></td>
+                    <td>${{ "%.2f"|format(po.total_amount) if po.total_amount is not none else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('purchase_orders.view_purchase_order', po_id=po.id) }}" class="btn btn-sm btn-outline-primary">View PO</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No purchase orders found for this supplier.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

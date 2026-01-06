@@ -4,57 +4,66 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Purchase Orders</h2>
-    <a href="{{ url_for('purchase_orders.create_purchase_order') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle-fill"></i> Create New PO
-    </a>
+  <h2>Purchase Orders</h2>
+  <a href="{{ url_for('purchase_orders.auto_generate_pos') }}"
+    class="btn btn-warning me-2">
+    <i class="bi bi-magic"></i> Auto-Generate POs
+  </a>
+  <a href="{{ url_for('purchase_orders.create_purchase_order') }}"
+    class="btn btn-primary">
+    <i class="bi bi-plus-circle-fill"></i> Create New PO
+  </a>
 </div>
 
 <div class="card shadow-sm">
-    <div class="card-body">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>PO #</th>
-                    <th>Supplier</th>
-                    <th>Order Date</th>
-                    <th>Expected Delivery</th>
-                    <th>Total Amount</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for po in purchase_orders %}
-                <tr>
-                    <td>{{ po.id }}</td>
-                    <td>{{ po.supplier_name }}</td>
-                    <td>{{ po.order_date.strftime('%Y-%m-%d') }}</td>
-                    <td>{{ po.expected_delivery_date.strftime('%Y-%m-%d') if po.expected_delivery_date else 'N/A' }}</td>
-                    <td>${{ "%.2f"|format(po.total_amount) }}</td>
-                    <td>
-                        <span class="badge 
+  <div class="card-body">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>PO #</th>
+          <th>Supplier</th>
+          <th>Order Date</th>
+          <th>Expected Delivery</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for po in purchase_orders %}
+        <tr>
+          <td>{{ po.id }}</td>
+          <td>{{ po.supplier_name }}</td>
+          <td>{{ po.order_date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ po.expected_delivery_date.strftime('%Y-%m-%d') if
+            po.expected_delivery_date else 'N/A' }}</td>
+          <td>${{ "%.2f"|format(po.total_amount) }}</td>
+          <td>
+            <span class="badge 
                             {% if po.status == 'Draft' %}bg-secondary
                             {% elif po.status == 'Pending' %}bg-warning text-dark
                             {% elif po.status == 'Approved' %}bg-success
                             {% elif po.status == 'Rejected' %}bg-danger
                             {% elif po.status == 'Fulfilled' %}bg-info text-dark
                             {% else %}bg-light text-dark{% endif %}">
-                            {{ po.status }}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('purchase_orders.view_purchase_order', po_id=po.id) }}" class="btn btn-sm btn-outline-primary">View</a>
-                        <a href="{{ url_for('purchase_orders.edit_purchase_order', po_id=po.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" class="text-center text-muted">No purchase orders found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+              {{ po.status }}
+            </span>
+          </td>
+          <td>
+            <a href="{{ url_for('purchase_orders.view_purchase_order', po_id=po.id) }}"
+              class="btn btn-sm btn-outline-primary">View</a>
+            <a href="{{ url_for('purchase_orders.edit_purchase_order', po_id=po.id) }}"
+              class="btn btn-sm btn-outline-secondary">Edit</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted">No purchase orders
+            found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

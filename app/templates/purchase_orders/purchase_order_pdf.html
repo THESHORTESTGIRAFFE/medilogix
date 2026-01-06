@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Order #{{ purchase_order.id }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        h1 { color: #333; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .header img { max-width: 150px; }
+        .po-details, .supplier-details { margin-top: 2em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 2em; }
+        th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .total { text-align: right; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Purchase Order</h1>
+            <p><strong>PO #:</strong> {{ purchase_order.id }}</p>
+            <p><strong>Date:</strong> {{ purchase_order.order_date.strftime('%Y-%m-%d') }}</p>
+        </div>
+        <div>
+            <img src="{{ base_url }}/static/images/logo.png" alt="Company Logo">
+        </div>
+    </div>
+
+    <div class="supplier-details">
+        <h2>Supplier</h2>
+        <p><strong>Name:</strong> {{ purchase_order.supplier_name }}</p>
+        <p><strong>Address:</strong> {{ purchase_order.supplier_address }}</p>
+        <p><strong>Email:</strong> {{ purchase_order.supplier_email }}</p>
+    </div>
+
+    <div class="po-details">
+        <h2>Items</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item (SKU)</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in po_items %}
+                <tr>
+                    <td>{{ item.item_name }} ({{ item.item_sku or 'N/A' }})</td>
+                    <td>{{ "%.2f"|format(item.quantity) }} {{ item.item_unit }}</td>
+                    <td>${{ "%.2f"|format(item.unit_price) }}</td>
+                    <td>${{ "%.2f"|format(item.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="total">Grand Total</td>
+                    <td class="total">${{ "%.2f"|format(purchase_order.total_amount) }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="notes" style="margin-top: 2em;">
+        <h3>Notes</h3>
+        <p>{{ purchase_order.notes or 'None' }}</p>
+    </div>
+</body>
+</html>

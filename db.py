@@ -27,6 +27,32 @@ def close_db(e=None):
         except Exception as ex:
             current_app.logger.error(f"Error closing database connection: {ex}")
 
+def execute_schema_file(file_path):
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        with open(file_path, 'r') as f:
+            sql_commands = f.read()
+        
+        sql_statements = [cmd.strip() for cmd in sql_commands.split(';') if cmd.strip()]
+
+        for statement in sql_statements:
+            try:
+                cursor.execute(statement)
+            except pymysql.MySQLError as e:
+                # Log the error and continue with other statements
+                current_app.logger.error(f"Error executing statement: {statement}\n{e}")
+        
+        db.commit()
+        current_app.logger.info("Schema file executed successfully.")
+    except FileNotFoundError:
+        current_app.logger.error(f"Schema file not found at: {file_path}")
+    except Exception as e:
+        db.rollback()
+        current_app.logger.error(f"An error occurred during schema execution: {e}")
+    finally:
+        cursor.close()
+
 def init_app(app):
     app.teardown_appcontext(close_db)
     # app.cli.add_command(init_db_command) # CLI command to init DB can be added later

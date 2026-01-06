@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }} - SAMS PMD{% endblock %}
+{% block title %}{{ title }} - MediLogix{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -11,40 +11,62 @@
 </div>
 
 {% if items %}
-<div class="card shadow-sm">
-    <div class="card-body">
-        <p>This report shows items that are at or below their specified reorder threshold.</p>
-        <div class="table-responsive">
-            <table class="table table-hover table-sm">
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th>SKU</th>
-                        <th>Category</th>
-                        <th>Unit</th>
-                        <th>Reorder Threshold</th>
-                        <th>Current Stock</th>
-                        <th>Deficit/Surplus</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in items %}
-                    <tr class="{{ 'table-danger' if item.current_stock < item.reorder_threshold else ('table-warning' if item.current_stock == item.reorder_threshold else '') }}">
-                        <td><a href="{{ url_for('inventory.view_item', item_id=item.id) }}">{{ item.name }}</a></td>
-                        <td>{{ item.sku if item.sku else 'N/A' }}</td>
-                        <td>{{ item.category_name if item.category_name else 'Uncategorized' }}</td>
-                        <td>{{ item.unit_of_measure }}</td>
-                        <td>{{ "%.2f"|format(item.reorder_threshold) }}</td>
-                        <td>{{ "%.2f"|format(item.current_stock) }}</td>
-                        <td>{{ "%.2f"|format(item.current_stock - item.reorder_threshold) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<form method="POST" action="{{ url_for('purchase_orders.generate_po_from_low_stock') }}">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <p class="mb-0">This report shows items at or below their reorder threshold.</p>
+            <button type="submit" class="btn btn-primary">Generate Draft POs</button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all"></th>
+                            <th>Item Name</th>
+                            <th>SKU</th>
+                            <th>Preferred Supplier</th>
+                            <th>Reorder Threshold</th>
+                            <th>Current Stock</th>
+                            <th>Reorder Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr class="{{ 'table-danger' if item.current_stock < item.reorder_threshold else 'table-warning' }}">
+                            <td><input type="checkbox" name="item_ids" value="{{ item.id }}" checked></td>
+                            <td><a href="{{ url_for('inventory.view_item', item_id=item.id) }}">{{ item.name }}</a></td>
+                            <td>{{ item.sku if item.sku else 'N/A' }}</td>
+                            <td>
+                                {% if item.preferred_supplier_name %}
+                                    {{ item.preferred_supplier_name }}
+                                {% else %}
+                                    <span class="text-muted"><i>No supplier set</i></span>
+                                {% endif %}
+                            </td>
+                            <td>{{ "%.2f"|format(item.reorder_threshold) }}</td>
+                            <td>{{ "%.2f"|format(item.current_stock) }}</td>
+                            <td><strong>{{ "%.2f"|format(item.reorder_quantity) }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+</form>
 {% else %}
 <div class="alert alert-success">No items are currently below their reorder threshold.</div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('select-all').addEventListener('change', function(e) {
+        const checkboxes = document.querySelectorAll('input[name="item_ids"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+    });
+</script>
 {% endblock %}

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from flask_login import login_required, current_user
 from db import query_db # Import from root db.py
 from app.models import Item # Import the Item model
-from app.utils import log_audit_action, get_current_stock, get_item_stock_by_location, get_item_stock_movements, get_low_stock_items, roles_required, get_aging_stock_items
+from app.utils import log_audit_action, get_current_stock, get_item_stock_by_location, get_item_stock_movements, get_low_stock_items, roles_required, get_aging_stock_items, generate_barcode_image
 from weasyprint import HTML, CSS # For PDF generation
 import datetime
 bp = Blueprint('inventory', __name__, url_prefix='/inventory')
@@ -197,7 +197,12 @@ def view_item(item_id):
     stock_by_location = get_item_stock_by_location(item_id)
     movements = get_item_stock_movements(item_id)
 
-    return render_template('inventory/view_item.html', item=item_obj, total_stock=total_stock, stock_by_location=stock_by_location, movements=movements)
+    # Generate barcode
+    barcode_data = item_obj.sku if item_obj.sku else str(item_obj.id)
+    barcode_filename = f"item_{item_obj.id}_barcode"
+    barcode_path = generate_barcode_image(barcode_data, barcode_filename)
+
+    return render_template('inventory/view_item.html', item=item_obj, total_stock=total_stock, stock_by_location=stock_by_location, movements=movements, barcode_path=barcode_path)
 
 # Edit Item
 @bp.route('/items/<int:item_id>/edit', methods=['GET', 'POST'])
