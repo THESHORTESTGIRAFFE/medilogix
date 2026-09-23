@@ -10,9 +10,16 @@ def app():
     app = create_app()
     app.config.update({
         "TESTING": True,
+        "MYSQL_DB": "medilogix_db" # Use the existing database
     })
 
     with app.app_context():
+        # Initialize the schema for the test database
+        from db import execute_schema_file
+        import os
+        schema_path = os.path.join(os.path.dirname(__file__), '..', 'medilogix_db.sql')
+        execute_schema_file(schema_path)
+
         from werkzeug.security import generate_password_hash
         from db import query_db
 
