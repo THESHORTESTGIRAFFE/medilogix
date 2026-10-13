@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Login - SAMS{% endblock %}
+{% block title %}Login - MediLogix{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -8,9 +8,9 @@
         <div class="card mt-5 shadow-sm">
             <div class="card-body p-4">
                 <div class="text-center mb-3">
-                    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="SAMS Logo" class="img-fluid" style="max-height: 100px;">
+                    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="MediLogix Logo" class="img-fluid" style="max-height: 100px;">
                 </div>
-                <h3 class="card-title text-center mb-4">SAMS Login</h3>
+                <h3 class="card-title text-center mb-4">MediLogix Login</h3>
                 <form method="POST" action="{{ url_for('auth.login_page') }}">
                     {# Add CSRF token here if using Flask-WTF: {{ form.csrf_token }} #}
                     <div class="mb-3">

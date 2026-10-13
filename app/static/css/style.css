@@ -1,4 +1,4 @@
-/* Custom SAMS PMD Styles */
+/* Custom MediLogix PMD High-End Styling */
 html, body {
     height: 100%;
 }
@@ -6,5 +6,101 @@ html, body {
 body {
     display: flex;
     flex-direction: column;
+    background-color: #f8fafc;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
 }
-/* Add more custom styles as the project grows */
+
+/* Navbar Polish */
+.navbar {
+    backdrop-filter: blur(12px);
+    background-color: rgba(13, 110, 253, 0.92) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* Card & Surface Polish */
+.card {
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #ffffff;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+}
+
+/* Stat Cards */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+    border-top: 4px solid var(--bs-info);
+}
+
+.stat-card-primary { border-top-color: #0d6efd; }
+.stat-card-info { border-top-color: #0dcaf0; }
+.stat-card-success { border-top-color: #198754; }
+.stat-card-warning { border-top-color: #ffc107; }
+
+/* Buttons & Interactive Elements */
+.btn {
+    border-radius: 0.65rem;
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    border: none;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+    box-shadow: 0 6px 16px rgba(13, 110, 253, 0.35);
+    transform: translateY(-1px);
+}
+
+/* Tables */
+.table {
+    vertical-align: middle;
+}
+
+.table th {
+    font-weight: 600;
+    color: #475569;
+    background-color: #f1f5f9;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border-radius: 0.65rem;
+    border: 1px solid #cbd5e1;
+    padding: 0.65rem 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+}
+
+/* Footer */
+footer {
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 0.9rem;
+}

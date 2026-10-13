@@ -1,6 +1,6 @@
 # MediLogix - Medical Inventory Management System
 
-MediLogix is a web-based application for managing medical inventory, originally named SAMS (Stock and Asset Management System). It is designed to help healthcare facilities track stock levels, manage procurement, and ensure the availability of essential medical supplies.
+MediLogix is a web-based application for managing medical inventory, originally named MediLogix (Stock and Asset Management System). It is designed to help healthcare facilities track stock levels, manage procurement, and ensure the availability of essential medical supplies.
 
 ## Features
 

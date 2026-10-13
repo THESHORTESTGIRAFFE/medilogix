@@ -1,7 +1,3 @@
-Got it — let’s break down **Phase 2** (Advanced Inventory Management) and **Phase 3** (Supplier & Procurement Management) of **MediLogix** with **step-by-step detail** so it’s clear how we’ll implement them.
-
----
-
 ## **📦 Phase 2: Advanced Inventory Management**
 
 **Goal:** Strengthen MediLogix’s core stock control features for accuracy, speed, and transparency across multiple facilities.
@@ -176,5 +172,3 @@ Here are some suggestions for next steps:
 *   **Implement automated PO generation:** Based on low stock alerts.
 *   **Enhance the UI/UX:** The application is functional, but the user interface could be improved for better usability.
 *   **Write more tests:** To ensure the quality and stability of the application.
-
-What would you like to do next?

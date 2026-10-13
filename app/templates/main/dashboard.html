@@ -95,11 +95,11 @@
     }
 </style>
 {% endblock %}
-{% block title %}Dashboard - SAMS PMD{% endblock %}
+{% block title %}Dashboard - MediLogix PMD{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
-    <h1 class="mb-4">Welcome to SAMS Dashboard, {{ current_user.full_name if current_user.full_name else username }}!</h1>
+    <h1 class="mb-4">Welcome to MediLogix Dashboard, {{ current_user.full_name if current_user.full_name else username }}!</h1>
     <div class="row mb-4">
         <div class="col-12">
             {% if num_low_stock_items > 0 %}

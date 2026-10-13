@@ -21,7 +21,7 @@
 <body>
   <div class="header-container">
         <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo">
-        <span class="system-name">SAMS PMD</span>
+        <span class="system-name">MediLogix PMD</span>
     </div>
 
     <div class="report-title">{{ title }}</div>
@@ -59,6 +59,6 @@
     {% else %}
         <p>No items are currently below their reorder threshold.</p>
     {% endif %}
-    <div class="footer">SAMS PMD - Page <span class="page"></span> of <span class="topage"></span></div>
+    <div class="footer">MediLogix PMD - Page <span class="page"></span> of <span class="topage"></span></div>
 </body>
 </html>

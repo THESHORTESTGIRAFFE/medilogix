@@ -6,10 +6,10 @@ import os
 db_host = os.environ.get('MYSQL_HOST', 'localhost')
 db_user = os.environ.get('MYSQL_USER', 'root')
 db_password = os.environ.get('MYSQL_PASSWORD', '')
-db_name = os.environ.get('MYSQL_DB', 'sams_db')
+db_name = os.environ.get('MYSQL_DB', 'medilogix_db')
 
-# Path to the schema.sql file
-schema_file = os.path.join(os.path.dirname(__file__), 'schema.sql')
+# Path to the medilogix_db.sql file
+schema_file = os.path.join(os.path.dirname(__file__), 'medilogix_db.sql')
 
 def apply_schema():
     try:

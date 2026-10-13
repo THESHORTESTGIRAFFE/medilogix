@@ -29,7 +29,7 @@ def create_app(config_class='config.Config'):
         logging.basicConfig(level=logging.DEBUG)
         app.logger.setLevel(logging.DEBUG)
 
-    app.logger.info('SAMS application starting up...')
+    app.logger.info('MediLogix application starting up...')
 
     # db.py is at the project root. Import it directly.
     import db as project_db_module # Using an alias for clarity
