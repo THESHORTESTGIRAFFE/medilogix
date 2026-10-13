@@ -27,7 +27,25 @@ The application includes the following features:
 *   Python 3.10+
 *   MySQL
 
-### Installation
+### Quick Start with Production Runner (`run_production.py`)
+MediLogix provides a foolproof production runner script (`run_production.py`) that automates environment checks, virtual environment setup, dependency installation, database schema application, test execution, and application startup.
+
+You can run `python run_production.py` without arguments for an interactive menu, or use specific subcommands:
+```bash
+# Setup database schema
+python run_production.py setup
+
+# Run unit tests
+python run_production.py test
+
+# Check system status
+python run_production.py status
+
+# Run the application (with automatic browser launch)
+python run_production.py run
+```
+
+### Manual Installation & Running
 1.  Clone the repository:
     ```bash
     git clone <repository-url>
@@ -47,18 +65,18 @@ The application includes the following features:
     *   Update the database connection settings in `config.py`.
     *   Import the database schema:
         ```bash
-        mysql -u <username> -p <database_name> < schema.sql
+        mysql -u <username> -p <database_name> < medilogix_db.sql
         ```
 
 ### Running the Application
-To run the web application, execute the following command:
+To run the web application manually, execute:
 ```bash
 python run.py
 ```
 The application will be available at `http://localhost:5000`.
 
 ### Running the Tests
-To run the test suite, use `pytest`:
+To run the test suite manually, use `pytest`:
 ```bash
 pytest
 ```
